@@ -84,21 +84,37 @@ const exp = module.exports = {
   },
 
   log(cx) {
-    console.log('*   creeps: ',
-      cx.creeps.map(c =>
-        `${
-          c.name
-        }${
-          c.memory.normalCharaState
-        }.${
-          c.memory.normalCharaState === C.NormalCharaStates.GAIN_SRC ?
-            c.memory.normalCharaSourceID.substr(-3) :
-            null
-        }`
-      ).join('; ')
+    console.log(
+      [
+        `[${Game.time}=0b${Game.time.toString(2)}]`,
+
+        '*       creeps: ' +
+          cx.creeps.map(c =>
+            `${
+              c.name
+            }${
+              c.memory.normalCharaState
+            },${
+              c.memory.normalCharaState === C.NormalCharaStates.GAIN_SRC ?
+                c.memory.normalCharaSourceID.substr(-3) :
+                null
+            }`
+          ).join('; ') +
+          ' '.repeat(100),
+
+        (Game.time & 31) !== 0 ? '' :
+          '*       creeps[].part: ' +
+          cx.creeps.map(c =>
+            `${
+              c.name
+            }:${
+              c.body.map(p => p.type[0]).join('')
+            }`
+          ).join(', '),
+      ].join('\n')
     );
 
-    if(Game.time % 20 === 0) {
+    if((Game.time & 15) === 0) {
       /*console.log('  # damagedStructures: ', JSON.stringify(
         cx.damagedStructures[0].map(ds => [ds.structureType, ds.pos]),
       ));*/
