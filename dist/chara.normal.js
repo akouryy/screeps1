@@ -45,6 +45,31 @@ module.exports = {
       cx.r[rn].sourcesBalance,
       cx.creeps.map(c => c.memory.normalCharaSourceID),
     );
+
+    // swap
+    R.u.safely(() => {
+      const sources = cx.r[chara.room.name].sources;
+      const cr1 = chara;
+
+      const src1 = sources.find(s => s.id === cr1.memory.normalCharaSourceID);
+      if(!src1) return;
+      const dist1 = cr1.pos.findPathTo(src1).length;
+      // console.log(dist1);
+      for(const cr2 of cx.creeps) {
+        const src2 = sources.find(s => s.id === cr2.memory.normalCharaSourceID);
+        if(!src2) continue;
+        const dist2 = cr2.pos.findPathTo(src2).length;
+        const newDist1 = cr1.pos.findPathTo(src2).length;
+        const newDist2 = cr2.pos.findPathTo(src1).length;
+        // console.log(dist2, newDist1, newDist2);
+        if(newDist1 < dist1 && newDist2 < dist2) {
+          cr1.memory.normalCharaSourceID = src2.id;
+          cr2.memory.normalCharaSourceID = src1.id;
+          if(cx.debug) console.log(`Swapped source of ${cr1.name} and ${cr2.name}.`)
+          break;
+        }
+      }
+    });
   },
 
   balanceWork(cx, chara) {
