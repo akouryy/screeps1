@@ -3,7 +3,8 @@ const R = require('rab');
 
 const exp = module.exports = {
   calc() {
-    const debug = Game.flags._DEBUG.color === COLOR_YELLOW;
+    const debug = Game.flags._DEBUG.color !== COLOR_WHITE;
+    const shouldPickup = Game.flags._PICKUP.color !== COLOR_WHITE;
 
     const creeps = _.values(Game.creeps).filter(c => !c.memory.isSpecial);
     const rooms = _.values(Game.rooms);
@@ -53,8 +54,8 @@ const exp = module.exports = {
       const sources = room.find(FIND_SOURCES);
 
       const sourcesBalance = {
-        [sources[0]]: 3,
-        [sources[1]]: 1,
+        [sources[0].id]: 2,
+        [sources[1].id]: 1,
       };
 
       roomSpecific[room.name] = {
@@ -75,21 +76,26 @@ const exp = module.exports = {
       roleBalance,
       rooms,
       r: roomSpecific,
+      shouldPickup,
       sources,
       towers,
     };
   },
 
   log(cx) {
-    console.log('  # creeps: ', JSON.stringify(
-      cx.creeps.map(c => [
-        c.name,
-        c.memory.normalCharaState,
-        c.memory.normalCharaState === C.NormalCharaStates.GAIN_SRC ?
-          c.memory.normalCharaSourceID.substring(10,14) :
-          null,
-      ])
-    ));
+    console.log('*   creeps: ',
+      cx.creeps.map(c =>
+        `${
+          c.name
+        }${
+          c.memory.normalCharaState
+        }.${
+          c.memory.normalCharaState === C.NormalCharaStates.GAIN_SRC ?
+            c.memory.normalCharaSourceID.substr(-3) :
+            null
+        }`
+      ).join('; ')
+    );
 
     if(Game.time % 20 === 0) {
       /*console.log('  # damagedStructures: ', JSON.stringify(

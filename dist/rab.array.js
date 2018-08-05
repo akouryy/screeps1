@@ -18,10 +18,13 @@ module.exports = {
     cycleGet: (arr, idx) => arr[idx % arr.length],
 
     balance(expected, actual) {
+      const x = _.isArray(expected) ?
+        _.countBy(expected) :
+        expected;
       const a = _.isArray(actual) ?
         _.countBy(actual) :
         actual;
-      const ret = _.min(_.keys(expected), k => (a[k] || 0) / expected[k]);
+      const ret = _.min(_.keys(x), k => (a[k] || 0) / x[k]);
       const retNum = Number(ret);
       return Number.isNaN(retNum) ? ret : retNum;
     },

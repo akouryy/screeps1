@@ -57,11 +57,27 @@ module.exports = {
   },
 
   gainSrc(cx, chara) {
+    if(cx.shouldPickup) {
+      const drop = chara.room.find(FIND_DROPPED_RESOURCES);
+      if(drop.length > 0) {
+        const err = chara.pickup(drop[0]);
+        if(err == ERR_NOT_IN_RANGE) {
+          chara.moveTo(drop[0], {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+        } else if(err !== OK) {
+          console.log(`${chara}.pickup: ${err}`);
+        }
+        return { end: chara.carry.energy >= chara.carryCapacity - 4 };
+      }
+    }
+
     const sources = cx.r[chara.room.name].sources;
 
     const src = sources.find(s => s.id === chara.memory.normalCharaSourceID) || sources[0];
-    if(chara.harvest(src) == ERR_NOT_IN_RANGE) {
+    const err = chara.harvest(src);
+    if(err == ERR_NOT_IN_RANGE) {
       chara.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+    } else if(err !== OK) {
+      console.log(`${chara}.harvest: ${err}`)
     }
     return { end: chara.carry.energy >= chara.carryCapacity - 4 };
   },

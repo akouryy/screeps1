@@ -5,7 +5,7 @@ const exp = module.exports = {
   tick: (cx) => {
     try {
       exp.clearMemory(cx);
-      if(cx.creeps.length < 15) {
+      if(cx.creeps.length < 13) {
         exp.spawn(cx, {
           [c.roles.CHARGE]: 0.3,
           [c.roles.UP]: 0.4,
@@ -31,24 +31,24 @@ const exp = module.exports = {
   },
 
   spawn: (cx, rolePs) => {
-    const eneToUse = cx.creeps.length < 10 ? 550 : 700;
+    const eneToUse = cx.creeps.length < 10 ? 550 : 800;
     if(Game.spawns.pyon.room.energyAvailable < eneToUse) return;
 
     const f = parts => {
       const name = exp.genNewName(cx);
-      const role = Number(exp.getDesirableRole(cx, rolePs));
+      // const role = Number(exp.getDesirableRole(cx, rolePs));
       const taste = Math.floor(Math.random() * (1 << 30));
-      const alwaysUp = role === c.roles.BUILD && Math.floor(taste / 486) % 2 === 0;
-      const err = Game.spawns.pyon.spawnCreep(parts, name, { memory: { role, alwaysUp, taste }});
+      // const alwaysUp = role === c.roles.BUILD && Math.floor(taste / 486) % 2 === 0;
+      const err = Game.spawns.pyon.spawnCreep(parts, name, { memory: { /*role, alwaysUp,*/ taste }});
 
       if(err === 0) {
-        console.log(`Started to draw ${name} with ${role}, ${parts}.`);
+        console.log(`Started to draw ${name} with ${parts}.`);
       }
       return err;
     };
 
-    if(f([WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,ATTACK,ATTACK]) === ERR_NOT_ENOUGH_ENERGY)
-    if(f([WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,ATTACK]) === ERR_NOT_ENOUGH_ENERGY)
+    if(f([WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
+    if(f([WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
     if(f([WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
     if(f([WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
     if(f([WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
