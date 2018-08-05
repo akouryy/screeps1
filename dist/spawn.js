@@ -33,7 +33,10 @@ const exp = module.exports = {
   spawn: (cx, rolePs) => {
     if(cx.stopSpawn) return;
 
-    const eneToUse = cx.creeps.length < 10 ? 550 : 800;
+    const eneToUse =
+      cx.creeps.length < 5 ? 450 :
+      cx.creeps.length < 10 ? 650 :
+      800;
     if(Game.spawns.pyon.room.energyAvailable < eneToUse) return;
 
     const f = parts => {
