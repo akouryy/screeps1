@@ -46,7 +46,7 @@ const exp = module.exports = {
 
     for(const room of rooms) {
       const workBalance = {
-        [C.NormalCharaStates.WORK_SPAWN]: 5,
+        [C.NormalCharaStates.WORK_SPAWN]: creeps.length > 10 ? 5 : 7,
         [C.NormalCharaStates.WORK_UP]: 3,
         [C.NormalCharaStates.WORK_TOWER]: 2,
         [C.NormalCharaStates.WORK_BUILD]: constructionSites[0].length > 10 ? 3 : constructionSites[0].length > 0 ? 2 : 1,
