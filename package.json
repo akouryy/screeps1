@@ -1,0 +1,11 @@
+{
+  "name": "screepyon",
+  "scripts": {
+    "deploy": "grunt screeps"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.3",
+    "grunt-cli": "^1.2.0",
+    "grunt-screeps": "^1.4.0"
+  }
+}
