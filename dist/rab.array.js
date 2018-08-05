@@ -21,6 +21,8 @@ module.exports = {
       const a = _.isArray(actual) ?
         _.countBy(actual) :
         actual;
-      return _.min(_.keys(expected), k => (a[k] || 0) / expected[k]);
+      const ret = _.min(_.keys(expected), k => (a[k] || 0) / expected[k]);
+      const retNum = Number(ret);
+      return Number.isNaN(retNum) ? ret : retNum;
     },
 };

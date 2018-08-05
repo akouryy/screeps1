@@ -1,4 +1,4 @@
-const c = require('consts');
+const C = require('consts');
 const R = require('rab');
 
 const exp = module.exports = {
@@ -35,10 +35,34 @@ const exp = module.exports = {
     );
 
     const roleBalance = {
-      [c.roles.BUILD]: 1,
-      [c.roles.CHARGE]: 3,
-      [c.roles.UP]: 1,
+      [C.roles.BUILD]: 1,
+      [C.roles.CHARGE]: 3,
+      [C.roles.UP]: 1,
     };
+
+    const roomSpecific = {};
+
+    for(const room of rooms) {
+      const workBalance = {
+        [C.NormalCharaStates.WORK_SPAWN]: 3,
+        [C.NormalCharaStates.WORK_UP]: 1,
+        [C.NormalCharaStates.WORK_TOWER]: 1,
+        [C.NormalCharaStates.WORK_BUILD]: 1,
+      };
+
+      const sources = room.find(FIND_SOURCES);
+
+      const sourcesBalance = {
+        [sources[0]]: 3,
+        [sources[1]]: 1,
+      };
+
+      roomSpecific[room.name] = {
+        sources,
+        sourcesBalance,
+        workBalance,
+      };
+    }
 
     return {
       chargeables,
@@ -50,6 +74,7 @@ const exp = module.exports = {
       debug,
       roleBalance,
       rooms,
+      r: roomSpecific,
       sources,
       towers,
     };
@@ -57,7 +82,13 @@ const exp = module.exports = {
 
   log(cx) {
     console.log('  # creeps: ', JSON.stringify(
-      cx.creeps.map(c => [c.name, c.memory.role, c.memory.realRole])
+      cx.creeps.map(c => [
+        c.name,
+        c.memory.normalCharaState,
+        c.memory.normalCharaState === C.NormalCharaStates.GAIN_SRC ?
+          c.memory.normalCharaSourceID.substring(10,14) :
+          null,
+      ])
     ));
 
     if(Game.time % 20 === 0) {

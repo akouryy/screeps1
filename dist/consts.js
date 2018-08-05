@@ -1,10 +1,16 @@
-module.exports = {
+module.exports = Object.freeze({
   roles: {
     CHARGE: 1,
     UP: 2,
     BUILD: 3,
   },
-
+  NormalCharaStates: {
+    GAIN_SRC: 1,
+    WORK_SPAWN: 2,
+    WORK_BUILD: 3,
+    WORK_UP: 4,
+    WORK_TOWER: 5,
+  },
   creepNames: [
     '心愛', '智乃', '理世', '千夜', '紗路', 'ティッピー', 'モカ', 'ワイルドギース', '麻耶', '恵',
     '忍', 'アリス', '綾', '陽子', 'カレン', '穂乃花',
@@ -23,4 +29,4 @@ module.exports = {
     りせ: 'black', あかね: '#f34', まり: '#73645d', ともこ: '#faa',
     撫子: '#d8b2a3', 花子: '#8d6b62', 楓: '#788698',
   },
-};
+});

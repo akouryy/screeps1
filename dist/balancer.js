@@ -3,6 +3,7 @@ const R = require('rab');
 
 const exp = module.exports = {
   tick(cx) {
+    /*
     updateFrozen = Game.time % 20 === 0;
     for(const creep of cx.creeps) {
       const a = creep.memory.oldPos, b = creep.pos;
@@ -17,5 +18,6 @@ const exp = module.exports = {
         creep.memory.oldPos = creep.pos;
       }
     }
+    */
   },
 };

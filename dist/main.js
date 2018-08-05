@@ -1,6 +1,7 @@
 // uploaded by grunt-screeps
 const c = require('consts');
 const R = require('rab');
+const normalChara = require('chara.normal');
 const contextCalc = require('context_calc');
 const spawn = require('spawn');
 const balancer = require('balancer');
@@ -13,7 +14,7 @@ const roleTower = require('role.tower');
 
 module.exports.loop = function loop() {
   const cx = contextCalc.calc();
-  R.u.safely(() => wroom.safemode(Game.spawns.pyon.room));
+  // R.u.safely(() => wroom.safemode(Game.spawns.pyon.room));
   R.u.safely(() => spawn.tick(cx));
   R.u.safely(() => balancer.tick(cx));
 
@@ -42,6 +43,11 @@ module.exports.loop = function loop() {
 
   // creepsManager.tick(cx);
   for(const creep of cx.creeps) {
+    if(true)
+    R.u.safely(() => {
+      normalChara.tick(cx, creep);
+    });
+    else
     R.u.safely(() => {
       if(creep.memory.role === c.roles.CHARGE) {
         if(cx.rooms[0].energyAvailable < cx.rooms[0].energyCapacityAvailable) {
