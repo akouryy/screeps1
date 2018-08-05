@@ -3,10 +3,17 @@ const R = require('rab');
 
 const exp = module.exports = {
   calc() {
-    const debug = Game.flags._DEBUG.color !== COLOR_WHITE;
-    const shouldPickup = Game.flags._PICKUP.color !== COLOR_WHITE;
+    const flg = n => Game.flags[n] && Game.flags[n].color !== COLOR_WHITE;
 
-    const creeps = _.values(Game.creeps).filter(c => !c.memory.isSpecial);
+    const debug = flg('_DEBUG');
+    const stopSpawn = flg('_STOPSPAWN');
+    const shouldPickup = flg('_PICKUP');
+
+    const spawningCreepNames = Game.spawns.pyon.spawning ? [Game.spawns.pyon.spawning.name] : [];
+    const creeps = _.values(Game.creeps).filter(c =>
+      !c.memory.isSpecial &&
+      !spawningCreepNames.includes(c.name)
+    );
     const rooms = _.values(Game.rooms);
     const constructionSites = rooms.map(r => r.find(FIND_CONSTRUCTION_SITES));
     const chargeables = rooms.map(r => r.find(FIND_STRUCTURES, {
@@ -35,27 +42,21 @@ const exp = module.exports = {
       }), ds => ds.hits / ds.hitsMax)
     );
 
-    const roleBalance = {
-      [C.roles.BUILD]: 1,
-      [C.roles.CHARGE]: 3,
-      [C.roles.UP]: 1,
-    };
-
     const roomSpecific = {};
 
     for(const room of rooms) {
       const workBalance = {
         [C.NormalCharaStates.WORK_SPAWN]: 3,
-        [C.NormalCharaStates.WORK_UP]: 1,
-        [C.NormalCharaStates.WORK_TOWER]: 1,
-        [C.NormalCharaStates.WORK_BUILD]: 1,
+        [C.NormalCharaStates.WORK_UP]: 3,
+        [C.NormalCharaStates.WORK_TOWER]: 2,
+        [C.NormalCharaStates.WORK_BUILD]: constructionSites[0].length > 10 ? 3 : constructionSites[0].length > 0 ? 2 : 1,
       };
 
       const sources = room.find(FIND_SOURCES);
 
       const sourcesBalance = {
-        [sources[0].id]: 2,
-        [sources[1].id]: 1,
+        [sources[0].id]: sources[0].energy > 0 ? 2 : 0.01,
+        [sources[1].id]: sources[1].energy > 0 ? 1 : 0.01,
       };
 
       roomSpecific[room.name] = {
@@ -73,11 +74,11 @@ const exp = module.exports = {
       damagedRoads,
       damagedWalls,
       debug,
-      roleBalance,
       rooms,
       r: roomSpecific,
       shouldPickup,
       sources,
+      stopSpawn,
       towers,
     };
   },

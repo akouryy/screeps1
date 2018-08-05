@@ -61,7 +61,7 @@ module.exports = {
       const drop = chara.room.find(FIND_DROPPED_RESOURCES);
       if(drop.length > 0) {
         const err = chara.pickup(drop[0]);
-        if(err == ERR_NOT_IN_RANGE) {
+        if(err === ERR_NOT_IN_RANGE) {
           chara.moveTo(drop[0], {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
         } else if(err !== OK) {
           console.log(`${chara}.pickup: ${err}`);
@@ -74,7 +74,10 @@ module.exports = {
 
     const src = sources.find(s => s.id === chara.memory.normalCharaSourceID) || sources[0];
     const err = chara.harvest(src);
-    if(err == ERR_NOT_IN_RANGE) {
+    if(err === ERR_NOT_IN_RANGE) {
+      chara.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+    } else if(err === ERR_NOT_ENOUGH_RESOURCES) {
+      this.balanceSources(cx, chara);
       chara.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
     } else if(err !== OK) {
       console.log(`${chara}.harvest: ${err}`)

@@ -10,7 +10,7 @@ const exp = module.exports = {
     }
 
     const dsss = [cx.damagedRamparts, cx.damagedRoads, cx.damagedWalls].filter(dss => dss.length > 0);
-    const dss = dsss[Math.floor(Math.random() * dsss.length)];
+    const dss = dsss[Game.time % 3];
     const ds = dss[0][Math.floor(Math.random() * Math.min(3, dss.length))];
     if(ds) {
       const err = tower.repair(ds);
