@@ -1,10 +1,10 @@
-const c = require('consts');
+const C = require('consts');
 const R = require('rab');
 
 module.exports = {
   /** @param {Creep} creep **/
   tick: function(cx, creep) {
-    creep.memory.realRole = c.roles.UP;
+    creep.memory.realRole = C.roles.UP;
 
     if(creep.memory.upgrading && creep.carry.energy == 0) {
       creep.memory.upgrading = false;
@@ -25,14 +25,14 @@ module.exports = {
 
     if(creep.memory.upgrading) {
       if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#cc33ff', opacity: 1}});
+        creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: C.charaColors[creep.name], opacity: 1}});
       }
     }
     else {
       const sources = cx.sources[0];
       const src = sources[creep.memory.taste % 3 < 2 ? 0 : 1];
       if(creep.harvest(src) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(src, {visualizePathStyle: {stroke: '#cc33ff', opacity: 1}});
+        creep.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[creep.name], opacity: 1}});
       }
     }
   }

@@ -1,10 +1,10 @@
-const c = require('consts');
+const C = require('consts');
 const R = require('rab');
 
 const exp = module.exports = {
   /** @param {Creep} creep **/
   tick: function(cx, creep, sourceIdx=0) {
-    creep.memory.realRole = c.roles.CHARGE;
+    creep.memory.realRole = C.roles.CHARGE;
 
 
     if(!creep.memory.fetching && creep.carry.energy == 0) {
@@ -29,7 +29,7 @@ const exp = module.exports = {
       // const src = R.a.cycleGet(sources, Math.floor(creep.memory.taste / 11));
       const src = sources[creep.memory.taste % 3 < 2 ? 0 : 1];
       if(creep.harvest(src) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(src, {visualizePathStyle: {stroke: '#ff0', opacity: 1}});
+        creep.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[creep.name], opacity: 1}});
       }
     } else {
       const targets = cx.chargeables[0];
@@ -38,7 +38,7 @@ const exp = module.exports = {
           creep.memory.taste / 4 % 3 < 1 && targets.find(t => t.structureType === STRUCTURE_TOWER) ||
           R.a.cycleGet(targets, Math.floor(creep.memory.taste / 13));
         if(creep.transfer(tgt, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(tgt, {visualizePathStyle: {stroke: '#ff0', opacity: 1}});
+          creep.moveTo(tgt, {visualizePathStyle: {stroke: C.charaColors[creep.name], opacity: 1}});
         }
       }
     }
