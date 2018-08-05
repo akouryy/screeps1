@@ -32,7 +32,7 @@ module.exports = {
       const sources = cx.sources[0];
       const src = sources[creep.memory.taste % 3 < 2 ? 0 : 1];
       if(creep.harvest(src) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(src, {visualizePathStyle: {stroke: '#cc33f', opacity: 1}});
+        creep.moveTo(src, {visualizePathStyle: {stroke: '#cc33ff', opacity: 1}});
       }
     }
   }

@@ -25,24 +25,33 @@ module.exports.loop = function loop() {
     }
   }
 
+  R.u.safely(() => {
+    if(Game.creeps.claimer_) {
+      const creep = Game.creeps.claimer_;
+      if(creep.room.name === 'W51S52') {
+        creep.moveTo(creep.pos.findClosestByRange(FIND_EXIT_LEFT));
+      } else {
+        const err = creep.claimController(creep.room.controller);
+        console.log(err);
+        if(err === ERR_NOT_IN_RANGE) {
+          creep.moveTo(creep.room.controller);
+        }
+      }
+    }
+  });
+
   // creepsManager.tick(cx);
   for(const creep of cx.creeps) {
     R.u.safely(() => {
-      if(creep.memory.isSpecial) {
-        if(creep.name === '_claimer') {
-          if(creep.room.name === cx.rooms[0].name) {
-            creep.findExitTo()
-          }
-        }
-      } else if(creep.memory.role === c.roles.CHARGE) {
+      if(creep.memory.role === c.roles.CHARGE) {
         if(cx.rooms[0].energyAvailable < cx.rooms[0].energyCapacityAvailable) {
           roleCharge.tick(cx, creep, 1);
         } else {
           roleUp.tick(cx, creep);
         }
       } else if(creep.memory.role == c.roles.UP) {
-        if(cx.rooms[0].energyAvailable < cx.rooms[0].energyCapacityAvailable ||
-          Game.rooms.W51S52.controller.ticksToDowngrade > 5000
+        if(cx.rooms[0].energyAvailable < cx.rooms[0].energyCapacityAvailable / 2
+          /*||Game.rooms.W51S52.controller.ticksToDowngrade > 5000*/
           /*&& creep.memory.taste / 2 % 35 < 25*/
           /*&& cx.creeps.length < 13 && !creep.memory.alwaysUp*/) {
           roleCharge.tick(cx, creep, 0);
