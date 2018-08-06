@@ -1,10 +1,10 @@
+"use strict";
 // uploaded by grunt-screeps
 const c = require('consts');
 const R = require('rab');
 const normalChara = require('chara.normal');
 const contextCalc = require('context_calc');
 const spawn = require('spawn');
-const balancer = require('balancer');
 const wroom = require('wrap.room');
 const roleTower = require('role.tower');
 
@@ -12,7 +12,6 @@ module.exports.loop = function loop() {
   const cx = contextCalc.calc();
   // R.u.safely(() => wroom.safemode(Game.spawns.pyon.room));
   R.u.safely(() => spawn.tick(cx));
-  R.u.safely(() => balancer.tick(cx));
 
   for(const ts of cx.towers) {
     for(const tower of ts) {

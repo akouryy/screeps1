@@ -1,3 +1,4 @@
+"use strict";
 const c = require('consts');
 const R = require('rab');
 

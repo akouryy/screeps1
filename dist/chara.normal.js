@@ -1,22 +1,25 @@
+"use strict";
 const C = require('consts');
+const M = require('wrap.memory');
 const R = require('rab');
 
 module.exports = {
   tick(cx, chara) {
-    if(!chara.memory.normalCharaState) {
-      chara.memory.normalCharaState = C.NormalCharaStates.GAIN_SRC;
+    const mem = M(chara);
+    if(!mem.ncState) {
+      mem.ncState = C.NormalCharaStates.GAIN_SRC;
       this.balanceSources(cx, chara);
     }
-    if(chara.memory.normalCharaState === C.NormalCharaStates.GAIN_SRC) {
+    if(mem.ncState === C.NormalCharaStates.GAIN_SRC) {
       const res = this.gainSrc(cx, chara);
       if(res.end) {
-        chara.memory.normalCharaSourceID = null;
+        mem.ncSrcID = null;
         this.balanceWork(cx, chara);
-        chara.say(`仕事${chara.memory.normalCharaState}`)
+        chara.say(`仕事${mem.ncState}`)
       }
     } else {
       const res = (() => {
-        switch(chara.memory.normalCharaState) {
+        switch(mem.ncState) {
           case C.NormalCharaStates.WORK_SPAWN:
             return this.workSpawn(cx, chara);
           case C.NormalCharaStates.WORK_BUILD:
@@ -26,13 +29,13 @@ module.exports = {
           case C.NormalCharaStates.WORK_TOWER:
             return this.workTower(cx, chara);
           default:
-            throw new Error('Unknown normalCharaState: ' + JSON.stringify(chara.memory.normalCharaState));
+            throw new Error('Unknown normalCharaState: ' + JSON.stringify(mem.ncState));
         }
       })();
       if(res.end) {
-        chara.memory.normalCharaState = C.NormalCharaStates.GAIN_SRC;
+        mem.ncState = C.NormalCharaStates.GAIN_SRC;
         this.balanceSources(cx, chara);
-        chara.memory.taste = Math.floor(Math.random() * (1 << 30));
+        mem.taste_ = Math.floor(Math.random() * (1 << 30));
         chara.say('食事');
       }
     }
@@ -90,7 +93,8 @@ module.exports = {
         const err = chara.pickup(drop[0]);
         if(err === ERR_NOT_IN_RANGE) {
           chara.moveTo(drop[0], {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
-        } else if(err !== OK) {
+        }
+        if(cx.debug && err !== OK) {
           console.log(`${chara}.pickup: ${err}`);
         }
         return { end: chara.carry.energy >= chara.carryCapacity - 4 };
