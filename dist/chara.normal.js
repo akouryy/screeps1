@@ -56,6 +56,8 @@ module.exports = {
       const dist1 = cr1.pos.findPathTo(src1).length;
       // console.log(dist1);
       for(const cr2 of cx.creeps) {
+        if(cr2.memory.normalCharaState !== C.NormalCharaStates.GAIN_SRC) continue;
+
         const src2 = sources.find(s => s.id === cr2.memory.normalCharaSourceID);
         if(!src2) continue;
         const dist2 = cr2.pos.findPathTo(src2).length;
@@ -81,7 +83,7 @@ module.exports = {
     );
   },
 
-  gainSrc(cx, chara) {
+  pickEne(cx, chara) {
     if(cx.shouldPickup) {
       const drop = chara.room.find(FIND_DROPPED_RESOURCES);
       if(drop.length > 0) {
@@ -94,18 +96,32 @@ module.exports = {
         return { end: chara.carry.energy >= chara.carryCapacity - 4 };
       }
     }
+  },
 
-    const sources = cx.r[chara.room.name].sources;
+  gainSrc(cx, chara) {
+    const src = (() => {
+      const sources = cx.r[chara.room.name].sources;
+      for(let i = 0; i < 3; ++i) {
+        const src = sources.find(s => s.id === chara.memory.normalCharaSourceID);
+        if(src) return src;
+        this.balanceSources(cx, chara);
+      }
+      return sources[0];
+    })();
 
-    const src = sources.find(s => s.id === chara.memory.normalCharaSourceID) || sources[0];
     const err = chara.harvest(src);
     if(err === ERR_NOT_IN_RANGE) {
+      if(cx.shouldPickup) {
+        const ret = this.pickEne(cx, chara);
+        if(ret) return ret;
+      }
       chara.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
     } else if(err === ERR_NOT_ENOUGH_RESOURCES) {
       this.balanceSources(cx, chara);
       chara.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
-    } else if(err !== OK) {
-      console.log(`${chara}.harvest: ${err}`)
+    }
+    if(err !== OK) {
+      if(!cx.debug) console.log(`${chara}.harvest: ${err}`)
     }
     return { end: chara.carry.energy >= chara.carryCapacity - 4 };
   },

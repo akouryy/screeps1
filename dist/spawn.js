@@ -43,6 +43,7 @@ module.exports = {
       return err;
     };
 
+    // t = ceil((all-MOVE-(CARRY if not carrying)) * [swamp:5,road:0.5] / MOVE)
     if(f([WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
     if(f([WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
     if(f([WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
