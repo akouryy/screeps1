@@ -10,8 +10,8 @@ const exp = module.exports = {
       return; // TODO: エネルギーチェック
     }
 
-    const dsss = [cx.damagedRamparts, cx.damagedRoads, cx.damagedWalls].filter(dss => dss.length > 0);
-    const dss = dsss[Game.time % 3];
+    const dsss = [cx.damagedRamparts, cx.damagedWalls, cx.damagedRoads, cx.containers].filter(dss => dss.length > 0);
+    const dss = dsss[Game.time & 3] || dsss[0];
     const ds = dss[0][Math.floor(Math.random() * Math.min(3, dss.length))];
     if(ds) {
       const err = tower.repair(ds);
