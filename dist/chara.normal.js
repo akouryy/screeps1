@@ -79,11 +79,26 @@ module.exports = {
 
   balanceWork(cx, chara) {
     const rn = chara.room.name;
+    const mem = M(chara);
 
-    chara.memory.normalCharaState = R.a.balance(
+    mem.ncState = R.a.balance(
       cx.r[rn].workBalance,
-      cx.creeps.map(c => c.memory.normalCharaState),
+      cx.creeps.map(c => M(c).ncState),
     );
+    switch(mem.ncState) {
+      case C.NormalCharaStates.WORK_SPAWN:
+        this.balanceWorkSpawn(cx, chara);
+        break;
+      case C.NormalCharaStates.WORK_BUILD:
+        this.balanceWorkBuild(cx, chara);
+        break;
+      case C.NormalCharaStates.WORK_UP:
+        break;
+      case C.NormalCharaStates.WORK_TOWER:
+        break;
+      default:
+        throw new Error('Unknown normalCharaState: ' + JSON.stringify(mem.ncState));
+    }
   },
 
   pickEne(cx, chara) {
@@ -121,27 +136,44 @@ module.exports = {
       }
       chara.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
     } else if(err === ERR_NOT_ENOUGH_RESOURCES) {
+      if(cx.debug) console.log(`${chara}.harvest: ${err}`);
       this.balanceSources(cx, chara);
       chara.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
-    }
-    if(err !== OK) {
-      if(!cx.debug) console.log(`${chara}.harvest: ${err}`)
+    } else if(err !== OK) {
+      console.log(`${chara}.harvest: ${err}`);
     }
     return { end: chara.carry.energy >= chara.carryCapacity - 4 };
   },
 
+  balanceWorkSpawn(cx, chara) {
+    const spawns = cx.r[chara.room.name].spawnsUnfilled;
+    M(chara).ncWsSpnID = chara.pos.findClosestByRange(spawns).id;
+    console.log(`spawn target of ${chara.name}: ${M(chara).ncWsSpnID}`);
+  },
+
   workSpawn(cx, chara) {
+    const targets = cx.r[chara.room.name].spawnsUnfilled;
+    if(targets.length === 0) {
+      return { end: true };
+    }
+
     let end = false;
-    const targets = cx.chargeables[0];
-    if(targets.length > 0) {
-      const tgt = R.a.cycleGet(targets, Math.floor(chara.memory.taste / 13));
-      if(chara.transfer(tgt, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-        chara.moveTo(tgt, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+
+    const tgt = (() => {
+      const mem = M(chara);
+      for(let i = 0; i < 3; ++i) {
+        const tgt = targets.find(t => t.id === mem.ncWsSpnID);
+        if(tgt) return tgt;
+        this.balanceSources(cx, chara);
       }
-      if(chara.carry.energy === 0) {
-        end = true;
-      }
-    } else {
+      return targets[0];
+    })();
+
+    const err = chara.transfer(tgt, RESOURCE_ENERGY);
+    if(err == ERR_NOT_IN_RANGE) {
+      chara.moveTo(tgt, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+    }
+    if(chara.carry.energy === 0) {
       end = true;
     }
     return { end };
@@ -171,20 +203,34 @@ module.exports = {
     return { end };
   },
 
+  balanceWorkBuild(cx, chara) {
+    const cSites = cx.r[chara.room.name].constructionSites;
+    M(chara).ncWbTgtID = chara.pos.findClosestByRange(cSites).id;
+    console.log(`build target of ${chara.name}: ${M(chara).ncWbTgtID}`);
+  },
+
   workBuild(cx, chara) {
+    const targets = cx.r[chara.room.name].constructionSites;
+    if(targets.length === 0) {
+      return { end: true };
+    }
+
     let end = false;
-    const targets = cx.constructionSites[0];
-    if(targets.length > 0) {
-      const tgt =
-        targets.find(t => t.structureType === STRUCTURE_TOWER) ||
-        R.a.cycleGet(targets.slice(0,3), Math.floor(chara.memory.taste / 17));
-      if(chara.build(tgt) == ERR_NOT_IN_RANGE) {
-        chara.moveTo(tgt, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+
+    const tgt = (() => {
+      const mem = M(chara);
+      for(let i = 0; i < 3; ++i) {
+        const tgt = targets.find(t => t.id === mem.ncWbTgtID);
+        if(tgt) return tgt;
+        this.balanceSources(cx, chara);
       }
-      if(chara.carry.energy === 0) {
-        end = true;
-      }
-    } else {
+      return targets[0];
+    })();
+
+    if(chara.build(tgt) == ERR_NOT_IN_RANGE) {
+      chara.moveTo(tgt, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+    }
+    if(chara.carry.energy === 0) {
       end = true;
     }
     return { end };

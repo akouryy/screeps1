@@ -18,6 +18,20 @@ class CreepMemory {
     this.creep.memory.normalCharaSourceID = val;
   }
 
+  get ncWbTgtID() {
+    return this.creep.memory.normalCharaWorkBuildTargetID;
+  }
+  set ncWbTgtID(val) {
+    this.creep.memory.normalCharaWorkBuildTargetID = val;
+  }
+
+  get ncWsSpnID() {
+    return this.creep.memory.normalCharaWorkSpawnSpawnExID;
+  }
+  set ncWsSpnID(val) {
+    this.creep.memory.normalCharaWorkSpawnSpawnExID = val;
+  }
+
   get taste_() {
     return this.creep.memory.taste;
   }

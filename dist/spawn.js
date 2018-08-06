@@ -27,6 +27,7 @@ module.exports = {
     if(cx.stopSpawn) return;
 
     const eneToUse =
+      cx.creeps.length < 3 ? 300 :
       cx.creeps.length < 5 ? 450 :
       cx.creeps.length < 8 ? 550 :
       cx.creeps.length < 10 ? 650 :
@@ -54,6 +55,7 @@ module.exports = {
     if(f([WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
     if(f([WORK,WORK,WORK,CARRY,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
     if(f([WORK,WORK,WORK,CARRY,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
+    if(f([WORK,WORK,CARRY,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
     f([WORK,CARRY,MOVE]);
   },
 

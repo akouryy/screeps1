@@ -1,5 +1,6 @@
 "use strict";
 const C = require('consts');
+const M = require('wrap.memory');
 const R = require('rab');
 
 const exp = module.exports = {
@@ -60,9 +61,20 @@ const exp = module.exports = {
         [sources[1].id]: sources[1].energy > 0 ? 1 : 0.01,
       };
 
+      const cSites = room.find(FIND_CONSTRUCTION_SITES);
+
+      const spawnsUnfilled = room.find(FIND_STRUCTURES, {
+        filter: structure =>
+          [STRUCTURE_EXTENSION, STRUCTURE_SPAWN].includes(structure.structureType) &&
+            structure.energy < structure.energyCapacity,
+      });
+
+
       roomSpecific[room.name] = {
+        constructionSites: cSites,
         sources,
         sourcesBalance,
+        spawnsUnfilled,
         workBalance,
       };
     }
