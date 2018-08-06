@@ -18,6 +18,13 @@ class CreepMemory {
     this.creep.memory.normalCharaSourceID = val;
   }
 
+  get ncweWait() {
+    return this.creep.memory.normalCharaWorkEnergyWaiting;
+  }
+  set ncweWait(val) {
+    this.creep.memory.normalCharaWorkEnergyWaiting = val;
+  }
+
   get ncWbTgtID() {
     return this.creep.memory.normalCharaWorkBuildTargetID;
   }

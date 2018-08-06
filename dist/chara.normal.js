@@ -15,7 +15,7 @@ module.exports = {
       if(res.end) {
         mem.ncSrcID = null;
         this.balanceWork(cx, chara);
-        chara.say(`仕事${mem.ncState}`)
+        chara.say(`仕事${mem.ncState}`);
       }
     } else {
       const res = (() => {
@@ -49,6 +49,7 @@ module.exports = {
       cx.r[rn].sourcesBalance,
       cx.creeps.map(c => M(c).ncSrcID),
     );
+    if(cx.debug) console.log(`${chara.name} targeted source #${mem.ncSrcID}`);
 
     // swap
     R.u.safely(() => {
@@ -70,7 +71,7 @@ module.exports = {
         const newDist1 = cr1.pos.findPathTo(src2).length;
         const newDist2 = cr2.pos.findPathTo(src1).length;
         // console.log(dist2, newDist1, newDist2);
-        if(newDist1 < dist1 && newDist2 < dist2) {
+        if(newDist1 < dist1 && newDist2 < dist2 || newDist1 < dist2 && newDist2 < dist1) {
           mem1.ncSrcID = src2.id;
           mem2.ncSrcID = src1.id;
           if(cx.debug) console.log(`Swapped source of ${cr1.name} and ${cr2.name}.`)
@@ -122,16 +123,31 @@ module.exports = {
 
   gainSrc(cx, chara) {
     const mem = M(chara);
+    mem.ncweWait = mem.ncweWait || 0;
 
     const src = (() => {
       const sources = cx.r[chara.room.name].sources;
       for(let i = 0; i < 3; ++i) {
         const src = sources.find(s => s.id === mem.ncSrcID);
         if(src) return src;
+        mem.ncweWait = 0;
         this.balanceSources(cx, chara);
       }
       return sources[0];
     })();
+
+    if((mem.ncweWait & 7) === 7) {
+      const dir = _.sample([TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT]);
+      const err = chara.move(dir);
+      if(cx.debug) console.log(`${chara.name}<${mem.ncweWait}>'s breakthrough to ${dir}: ${err}`);
+      if((mem.ncweWait & 31) === 31) {
+        this.balanceSources(cx, chara);
+        mem.ncweWait = 0;
+      } else {
+        ++mem.ncweWait;
+      }
+      return { end: false };
+    }
 
     const err = chara.harvest(src);
     if(err === ERR_NOT_IN_RANGE) {
@@ -140,10 +156,17 @@ module.exports = {
         if(ret) return ret;
       }
       chara.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+
+      const lnDist = chara.pos.getRangeTo(src);
+      if(lnDist === 2 || lnDist === 3) ++mem.ncweWait;
+      else mem.ncweWait = 0;
     } else if(err === ERR_NOT_ENOUGH_RESOURCES) {
       if(cx.debug) console.log(`${chara}.harvest: ${err}`);
-      // this.balanceSources(cx, chara);
+      if(src.ticksToRegeneration > 30) {
+        this.balanceSources(cx, chara);
+      }
       chara.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+
     } else if(err !== OK) {
       console.log(`${chara}.harvest: ${err}`);
     }
@@ -153,7 +176,7 @@ module.exports = {
   balanceWorkSpawn(cx, chara) {
     const spawns = cx.r[chara.room.name].spawnsUnfilled;
     M(chara).ncWsSpnID = chara.pos.findClosestByRange(_.shuffle(spawns)).id;
-    console.log(`${chara.name} targeted spawnex #${M(chara).ncWsSpnID}`);
+    if(cx.debug) console.log(`${chara.name} targeted spawnex #${M(chara).ncWsSpnID}`);
   },
 
   workSpawn(cx, chara) {

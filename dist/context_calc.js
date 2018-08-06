@@ -18,11 +18,7 @@ const exp = module.exports = {
     );
     const rooms = _.values(Game.rooms);
     const constructionSites = rooms.map(r => r.find(FIND_CONSTRUCTION_SITES));
-    const chargeables = rooms.map(r => r.find(FIND_STRUCTURES, {
-      filter: structure =>
-        [STRUCTURE_EXTENSION, STRUCTURE_SPAWN, STRUCTURE_TOWER].includes(structure.structureType) &&
-          structure.energy < structure.energyCapacity,
-    }));
+
     const sources = rooms.map(r => r.find(FIND_SOURCES));
     const towers = rooms.map(r => r.find(FIND_MY_STRUCTURES, {filter: {structureType: STRUCTURE_TOWER}}));
     const damagedWalls = rooms.map(r =>
@@ -63,7 +59,7 @@ const exp = module.exports = {
       const sources = room.find(FIND_SOURCES);
 
       const sourcesBalance = {
-        [sources[0].id]: sources[0].energy > 0 ? 7 : 0.01,
+        [sources[0].id]: sources[0].energy > 0 ? 8 : 0.01,
         [sources[1].id]: sources[1].energy > 0 ? 4 : 0.01,
       };
 
@@ -86,7 +82,6 @@ const exp = module.exports = {
     }
 
     return {
-      chargeables,
       constructionSites,
       containers,
       creeps,
