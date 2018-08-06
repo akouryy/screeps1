@@ -2,7 +2,7 @@
 const c = require('consts');
 
 module.exports = {
-    sample: arr => arr[Math.floor(Math.random() * arr.length)],
+    sample: arr => arr[0 | Math.random() * arr.length],
 
     sampleFixed: (arr, str) => {
         if(arr.length === 0) return undefined;
@@ -25,8 +25,12 @@ module.exports = {
       const a = _.isArray(actual) ?
         _.countBy(actual) :
         actual;
-      const ret = _.min(_.shuffle(_.keys(x)), k => (a[k] || 0) / x[k]);
+      const ret = _.min(_.shuffle(_.keys(x)), k => x[k] ? (a[k] || 0) / x[k] : 1e30);
       const retNum = Number(ret);
       return Number.isNaN(retNum) ? ret : retNum;
+    },
+
+    mapObj(arr, fn) {
+      return Object.assign({}, ...arr.map(el => fn(el)));
     },
 };

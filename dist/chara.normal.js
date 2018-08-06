@@ -2,6 +2,9 @@
 const C = require('consts');
 const M = require('wrap.memory');
 const R = require('rab');
+const LG = require('wrap.log');
+
+const preLog = LG.color('#fcc', ' [nc]       ');
 
 module.exports = {
   tick(cx, chara) {
@@ -15,7 +18,7 @@ module.exports = {
       if(res.end) {
         mem.ncSrcID = null;
         this.balanceWork(cx, chara);
-        chara.say(`仕事${mem.ncState}`);
+        chara.say(`仕事${C.NormalCharaStateToShortName[mem.ncState]}`);
       }
     } else {
       const res = (() => {
@@ -35,8 +38,8 @@ module.exports = {
       if(res.end) {
         mem.ncState = C.NormalCharaStates.GAIN_SRC;
         this.balanceSources(cx, chara);
-        mem.taste_ = Math.floor(Math.random() * (1 << 30));
-        chara.say('食事');
+        mem.taste_ = 0 | Math.random() * (1 << 30);
+        chara.say('補給');
       }
     }
   },
@@ -49,7 +52,9 @@ module.exports = {
       cx.r[rn].sourcesBalance,
       cx.creeps.map(c => M(c).ncSrcID),
     );
-    if(cx.debug) console.log(`${chara.name} targeted source #${mem.ncSrcID}`);
+    if(cx.debug) {
+      LG.println(preLog, `${LG.chara(chara)} targeted source #${mem.ncSrcID}.`);
+    }
 
     // swap
     R.u.safely(() => {
@@ -60,7 +65,6 @@ module.exports = {
       const src1 = sources.find(s => s.id === mem1.ncSrcID);
       if(!src1) return;
       const dist1 = cr1.pos.findPathTo(src1).length;
-      // console.log(dist1);
       for(const cr2 of cx.creeps) {
         const mem2 = M(cr2);
         if(mem2.ncState !== C.NormalCharaStates.GAIN_SRC) continue;
@@ -70,11 +74,12 @@ module.exports = {
         const dist2 = cr2.pos.findPathTo(src2).length;
         const newDist1 = cr1.pos.findPathTo(src2).length;
         const newDist2 = cr2.pos.findPathTo(src1).length;
-        // console.log(dist2, newDist1, newDist2);
         if(newDist1 < dist1 && newDist2 < dist2 || newDist1 < dist2 && newDist2 < dist1) {
           mem1.ncSrcID = src2.id;
           mem2.ncSrcID = src1.id;
-          if(cx.debug) console.log(`Swapped source of ${cr1.name} and ${cr2.name}.`)
+          if(cx.debug) {
+            LG.println(preLog, `Swapped sources of ${LG.chara(cr1)} and ${LG.chara(cr2)}.`);
+          }
           break;
         }
       }
@@ -114,7 +119,7 @@ module.exports = {
           chara.moveTo(drop[0], {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
         }
         if(cx.debug && err !== OK) {
-          console.log(`${chara}.pickup: ${err}`);
+          LG.println(preLog, `err: ${LG.chara(chara)}.pickup: ${err}.`);
         }
         return { end: chara.carry.energy >= chara.carryCapacity - 4 };
       }
@@ -139,7 +144,10 @@ module.exports = {
     if((mem.ncweWait & 7) === 7) {
       const dir = _.sample([TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT]);
       const err = chara.move(dir);
-      if(cx.debug) console.log(`${chara.name}<${mem.ncweWait}>'s breakthrough to ${dir}: ${err}`);
+      if(cx.debug) {
+        LG.println(preLog, `${LG.chara(chara)}<${mem.ncweWait}>'s breakthrough to ${dir}: ${err}`);
+        chara.say('打開');
+      }
       if((mem.ncweWait & 31) === 31) {
         this.balanceSources(cx, chara);
         mem.ncweWait = 0;
@@ -161,14 +169,16 @@ module.exports = {
       if(lnDist === 2 || lnDist === 3) ++mem.ncweWait;
       else mem.ncweWait = 0;
     } else if(err === ERR_NOT_ENOUGH_RESOURCES) {
-      if(cx.debug) console.log(`${chara}.harvest: ${err}`);
+      if(cx.debug) {
+        LG.println(preLog, `${LG.chara(chara)}.harvest: ${err}`);
+      }
       if(src.ticksToRegeneration > 30) {
         this.balanceSources(cx, chara);
       }
       chara.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
 
     } else if(err !== OK) {
-      console.log(`${chara}.harvest: ${err}`);
+      LG.println(preLog, `${LG.chara(chara)}.harvest: ${err}`);
     }
     return { end: chara.carry.energy >= chara.carryCapacity - 4 };
   },
@@ -176,7 +186,9 @@ module.exports = {
   balanceWorkSpawn(cx, chara) {
     const spawns = cx.r[chara.room.name].spawnsUnfilled;
     M(chara).ncWsSpnID = chara.pos.findClosestByRange(_.shuffle(spawns)).id;
-    if(cx.debug) console.log(`${chara.name} targeted spawnex #${M(chara).ncWsSpnID}`);
+    if(cx.debug) {
+      LG.println(preLog, `${LG.chara(chara)} targeted spawnex #${M(chara).ncWsSpnID}`);
+    }
   },
 
   workSpawn(cx, chara) {
@@ -196,12 +208,10 @@ module.exports = {
       }
       return targets[0];
     })();
-    // console.log(JSON.stringify(tgt));
 
     const err = chara.transfer(tgt, RESOURCE_ENERGY);
     if(err == ERR_NOT_IN_RANGE) {
       const err = chara.moveTo(tgt, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
-      // console.log(JSON.stringify([chara.pos, tgt.pos]));
     }
     if(chara.carry.energy === 0) {
       end = true;
@@ -220,7 +230,7 @@ module.exports = {
     let end = false;
     const targets = cx.towers[0];
     if(targets.length > 0) {
-      const tgt = R.a.cycleGet(targets, Math.floor(M(chara).taste_ / 13));
+      const tgt = R.a.cycleGet(targets, 0 | M(chara).taste_ / 13);
       if(chara.transfer(tgt, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
         chara.moveTo(tgt, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
       }
@@ -236,7 +246,7 @@ module.exports = {
   balanceWorkBuild(cx, chara) {
     const cSites = cx.r[chara.room.name].constructionSites;
     M(chara).ncWbTgtID = chara.pos.findClosestByRange(_.shuffle(cSites)).id;
-    console.log(`${chara.name} targeted build #${M(chara).ncWbTgtID}`);
+    LG.println(preLog, `${LG.chara(chara)} targeted build #${M(chara).ncWbTgtID}.`);
   },
 
   workBuild(cx, chara) {

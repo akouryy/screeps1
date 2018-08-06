@@ -2,11 +2,14 @@
 // uploaded by grunt-screeps
 const c = require('consts');
 const R = require('rab');
+const LG = require('wrap.log');
 const normalChara = require('chara.normal');
 const contextCalc = require('context_calc');
 const spawn = require('spawn');
 const wroom = require('wrap.room');
 const roleTower = require('role.tower');
+
+const preLog = ' [main]     ';
 
 module.exports.loop = function loop() {
   const cx = contextCalc.calc();
@@ -28,7 +31,7 @@ module.exports.loop = function loop() {
         creep.moveTo(creep.pos.findClosestByRange(FIND_EXIT_LEFT));
       } else {
         const err = creep.claimController(creep.room.controller);
-        console.log(err);
+        LG.println(preLog, err);
         if(err === ERR_NOT_IN_RANGE) {
           creep.moveTo(creep.room.controller);
         }
@@ -44,4 +47,6 @@ module.exports.loop = function loop() {
   }
 
   if(cx.debug) R.u.safely(() => contextCalc.log(contextCalc.calc()));
+
+  R.u.safely(() => LG.tickEnd(cx));
 }

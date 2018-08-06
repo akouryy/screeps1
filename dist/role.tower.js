@@ -12,7 +12,7 @@ const exp = module.exports = {
 
     const dsss = [cx.damagedRamparts, cx.damagedWalls, cx.damagedRoads, cx.containers].filter(dss => dss.length > 0);
     const dss = dsss[Game.time & 3] || dsss[0];
-    const ds = dss[0][Math.floor(Math.random() * Math.min(3, dss.length))];
+    const ds = dss[0][0 | Math.random() * Math.min(3, dss.length)];
     if(ds) {
       const err = tower.repair(ds);
       if(cx.debug && err !== OK && err !== ERR_NOT_ENOUGH_ENERGY) {

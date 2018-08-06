@@ -1,6 +1,9 @@
 "use strict";
 const c = require('consts');
 const R = require('rab');
+const LG = require('wrap.log');
+
+const preLog = ' [spn]  ';
 
 module.exports = {
   tick(cx) {
@@ -18,7 +21,7 @@ module.exports = {
     for(const name in Memory.creeps) {
       if(!Game.creeps[name]) {
         delete Memory.creeps[name];
-        console.log(`Cremated ${name}.`);
+        LG.println(preLog, `Cremated ${name}.`);
       }
     }
   },
@@ -36,11 +39,11 @@ module.exports = {
 
     const f = parts => {
       const name = this.genNewName(cx);
-      const taste = Math.floor(Math.random() * (1 << 30));
+      const taste = 0 | Math.random() * (1 << 30);
       const err = Game.spawns.pyon.spawnCreep(parts, name, { memory: { taste }});
 
       if(err === 0) {
-        console.log(`Started to draw ${name} with ${parts}.`);
+        LG.println(preLog, `Started to draw ${name} with ${parts}.`);
       }
       return err;
     };
@@ -62,7 +65,7 @@ module.exports = {
   genNewName(cx) {
     const ns = c.creepNames.filter(n => !Game.creeps[n]);
     if(ns.length > 0) {
-      return ns[Math.floor(Math.random() * ns.length)];
+      return R.a.sample(ns);
     } else {
       return Math.random().toString();
     }
