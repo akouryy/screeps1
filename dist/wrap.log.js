@@ -19,15 +19,20 @@ const LG = module.exports = {
     }
   },
   print(...m) {
-    msg.push(m.join(''));
+    msg.push(...m);
   },
   println(...m) {
-    m.push('\n');
-    msg.push(m.join(''));
+    msg.push(...m, '\n');
   },
-  puts(...m) {
-    m.push('');
-    msg.push(...m);
+  p(...m) {
+    msg.push(m.map(n => LG.stringify(n)).join('\n'), '\n');
+  },
+  stringify(m) {
+    try {
+      return JSON.stringify(m);
+    } catch(_e) {
+      return String(m);
+    }
   },
   chara(c) {
     return LG.bg(C.charaBGs[c.name] || 'inherit',

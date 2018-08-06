@@ -39,12 +39,18 @@ module.exports.loop = function loop() {
     }
   });
 
-  // creepsManager.tick(cx);
-  for(const creep of cx.creeps) {
-    R.u.safely(() => {
-      normalChara.tick(cx, creep);
-    });
-  }
+  R.u.safely(() => {
+    // creepsManager.tick(cx);
+    for(const room of cx.rooms) {
+      const cxr = cx.r[room.name];
+
+      for(const creep of cxr.creeps) {
+        R.u.safely(() => {
+          normalChara.tick(cx, creep);
+        });
+      }
+    }
+  });
 
   if(cx.debug) R.u.safely(() => contextCalc.log(contextCalc.calc()));
 

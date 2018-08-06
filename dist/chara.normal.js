@@ -18,7 +18,7 @@ module.exports = {
       if(res.end) {
         mem.ncSrcID = null;
         this.balanceWork(cx, chara);
-        chara.say(`仕事${C.NormalCharaStateToShortName[mem.ncState]}`);
+        chara.say(`仕事=${C.NormalCharaStateToShortName[mem.ncState]}`);
       }
     } else {
       const res = (() => {
@@ -45,12 +45,12 @@ module.exports = {
   },
 
   balanceSources(cx, chara) {
-    const rn = chara.room.name;
+    const cxr = cx.r[chara.room.name];
     const mem = M(chara);
 
     mem.ncSrcID = R.a.balance(
-      cx.r[rn].sourcesBalance,
-      cx.creeps.map(c => M(c).ncSrcID),
+      cxr.sourcesBalance,
+      cxr.creeps.map(c => M(c).ncSrcID),
     );
     if(cx.debug) {
       LG.println(preLog, `${LG.chara(chara)} targeted source #${mem.ncSrcID}.`);
@@ -65,7 +65,7 @@ module.exports = {
       const src1 = sources.find(s => s.id === mem1.ncSrcID);
       if(!src1) return;
       const dist1 = cr1.pos.findPathTo(src1).length;
-      for(const cr2 of cx.creeps) {
+      for(const cr2 of cxr.creeps) {
         const mem2 = M(cr2);
         if(mem2.ncState !== C.NormalCharaStates.GAIN_SRC) continue;
 
@@ -87,12 +87,12 @@ module.exports = {
   },
 
   balanceWork(cx, chara) {
-    const rn = chara.room.name;
+    const cxr = cx.r[chara.room.name];
     const mem = M(chara);
 
     mem.ncState = R.a.balance(
-      cx.r[rn].workBalance,
-      cx.creeps.map(c => M(c).ncState),
+      cxr.workBalance,
+      cxr.creeps.map(c => M(c).ncState),
     );
     switch(mem.ncState) {
       case C.NormalCharaStates.WORK_SPAWN:
@@ -244,13 +244,15 @@ module.exports = {
   },
 
   balanceWorkBuild(cx, chara) {
-    const cSites = cx.r[chara.room.name].constructionSites;
+    const cxr = cx.r[chara.room.name];
+    const cSites = cxr.constructionSites;
     M(chara).ncWbTgtID = chara.pos.findClosestByRange(_.shuffle(cSites)).id;
     LG.println(preLog, `${LG.chara(chara)} targeted build #${M(chara).ncWbTgtID}.`);
   },
 
   workBuild(cx, chara) {
-    const targets = cx.r[chara.room.name].constructionSites;
+    const cxr = cx.r[chara.room.name];
+    const targets = cxr.constructionSites;
     if(targets.length === 0) {
       return { end: true };
     }

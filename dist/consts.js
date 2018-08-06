@@ -13,11 +13,11 @@ exp.NormalCharaStates = {
   WORK_TOWER: 5,
 };
 exp.NormalCharaStateToShortName = {
-  [exp.NormalCharaStates.GAIN_SRC]: 'e',
-  [exp.NormalCharaStates.WORK_SPAWN]: 's',
-  [exp.NormalCharaStates.WORK_BUILD]: 'b',
-  [exp.NormalCharaStates.WORK_UP]: 'u',
-  [exp.NormalCharaStates.WORK_TOWER]: 't',
+  [exp.NormalCharaStates.GAIN_SRC]: '給',
+  [exp.NormalCharaStates.WORK_SPAWN]: '湧',
+  [exp.NormalCharaStates.WORK_BUILD]: '建',
+  [exp.NormalCharaStates.WORK_UP]: '昇',
+  [exp.NormalCharaStates.WORK_TOWER]: '塔',
 };
 exp.creepNames = [
   '心愛', '智乃', '理世', '千夜', '紗路', 'ティッピー', 'モカ', 'ワイルドギース', '麻耶', '恵',
@@ -26,7 +26,7 @@ exp.creepNames = [
   'あかり', '京子', '結衣', 'ちなつ', '綾乃', '千歳', '櫻子', '向日葵', 'りせ', 'あかね', 'まり', 'ともこ', '撫子', '花子', '楓',
 ];
 exp.charaColors = {
-  心愛: '#f96', 智乃: '#ccf', 理世: '#a1f', 千夜: '#173', 紗路: '#fc3',
+  心愛: '#f96', 智乃: '#abf', 理世: '#a1f', 千夜: '#173', 紗路: '#fc3',
   ティッピー: '#ffe', モカ: '#f87', ワイルドギース: '#93f', 麻耶: '#43c', 恵: '#f34',
   忍: '#371', アリス: '#fcf8bb', 綾: '#309', 陽子: '#d30', カレン: '#fefabc',
   穂乃花: '#775459',
@@ -42,7 +42,7 @@ exp.charaBGs = {
   ティッピー: '#000', モカ: '#000', ワイルドギース: '#000', 麻耶: '#000', 恵: '#000',
   忍: '#000', アリス: '#000', 綾: '#000', 陽子: '#000', カレン: '#000',
   穂乃花: '#ddd',
-  ゆずこ: '#000', 縁: '#000', 唯: '#000',
+  ゆずこ: '#000', 縁: '#edd', 唯: '#000',
   千穂: '#bbb', 佳: '#bbb', ふみ: '#bbb',
   あかり: '#000', 京子: '#000', 結衣: '#ccc', ちなつ: '#000',
   綾乃: '#000', 千歳: '#000', 櫻子: '#000', 向日葵: '#000',

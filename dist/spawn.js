@@ -3,18 +3,23 @@ const c = require('consts');
 const R = require('rab');
 const LG = require('wrap.log');
 
-const preLog = ' [spn]  ';
+const preLog = LG.color('#c99', ' [spn]      ');
 
 module.exports = {
   tick(cx) {
     this.clearMemory(cx);
-    if(cx.creeps.length < 13) {
-      this.spawn(cx, {
-        [c.roles.CHARGE]: 0.3,
-        [c.roles.UP]: 0.4,
-        [c.roles.BUILD]: 0.3,
-      });
-    }
+    R.u.safely(() => {
+      for(const room of cx.rooms) {
+        const cxr = cx.r[room.name];
+        if(cxr.creeps.length < 13) {
+          this.spawn(cx, room, {
+            [c.roles.CHARGE]: 0.3,
+            [c.roles.UP]: 0.4,
+            [c.roles.BUILD]: 0.3,
+          });
+        }
+      }
+    });
   },
 
   clearMemory(cx) {
@@ -26,14 +31,15 @@ module.exports = {
     }
   },
 
-  spawn(cx, rolePs) {
+  spawn(cx, room, rolePs) {
     if(cx.stopSpawn) return;
+    const cxr = cx.r[room.name];
 
     const eneToUse =
-      cx.creeps.length < 3 ? 300 :
-      cx.creeps.length < 5 ? 450 :
-      cx.creeps.length < 8 ? 550 :
-      cx.creeps.length < 10 ? 650 :
+      cxr.creeps.length < 3 ? 300 :
+      cxr.creeps.length < 5 ? 450 :
+      cxr.creeps.length < 8 ? 550 :
+      cxr.creeps.length < 10 ? 650 :
       800;
     if(Game.spawns.pyon.room.energyAvailable < eneToUse) return;
 
