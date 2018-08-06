@@ -101,18 +101,23 @@ const exp = module.exports = {
       [
         `[${Game.time}=0b${Game.time.toString(2)}]`,
 
-        '*       creeps: ' +
-          cx.creeps.map(c =>
-            `${
+        `*       creeps[${cx.creeps.length}]: ` +
+          cx.creeps.map(c => {
+            const mem = M(c);
+            return `${
               c.name
             }${
-              c.memory.normalCharaState
+              C.NormalCharaStateToShortName[mem.ncState]
             },${
-              c.memory.normalCharaState === C.NormalCharaStates.GAIN_SRC ?
-                c.memory.normalCharaSourceID.substr(-3) :
+              mem.ncState === C.NormalCharaStates.GAIN_SRC ?
+                mem.ncSrcID && mem.ncSrcID.substr(-3) :
+              mem.ncState === C.NormalCharaStates.WORK_BUILD ?
+                mem.ncWbTgtID && mem.ncWbTgtID.substr(-3):
+              mem.ncState === C.NormalCharaStates.WORK_SPAWN ?
+                mem.ncWsSpnID && mem.ncWsSpnID.substr(-3):
                 null
-            }`
-          ).join('; ') +
+            }`;
+          }).join('; ') +
           ' '.repeat(100),
 
         (Game.time & 31) !== 0 ? '' :
