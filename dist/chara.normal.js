@@ -185,9 +185,13 @@ module.exports = {
 
   balanceWorkSpawn(cx, chara) {
     const spawns = cx.r[chara.room.name].spawnsUnfilled;
-    M(chara).ncWsSpnID = chara.pos.findClosestByRange(_.shuffle(spawns)).id;
+    const spawn = chara.pos.findClosestByRange(_.shuffle(spawns));
+    if(!spawn) {
+      return { end: true };
+    }
+    M(chara).ncWsSpnID = spawn.id;
     if(cx.debug) {
-      LG.println(preLog, `${LG.chara(chara)} targeted spawnex #${M(chara).ncWsSpnID}`);
+      LG.println(preLog, `${LG.chara(chara)} targeted spawnex #${spawn.id}`);
     }
   },
 
@@ -246,7 +250,12 @@ module.exports = {
   balanceWorkBuild(cx, chara) {
     const cxr = cx.r[chara.room.name];
     const cSites = cxr.constructionSites;
-    M(chara).ncWbTgtID = chara.pos.findClosestByRange(_.shuffle(cSites)).id;
+    const cSite = chara.pos.findClosestByRange(_.shuffle(cSites))
+    LG.p(cSites, cSite);
+    if(!cSite) {
+      return { end: true };
+    }
+    M(chara).ncWbTgtID = cSite.id;
     LG.println(preLog, `${LG.chara(chara)} targeted build #${M(chara).ncWbTgtID}.`);
   },
 

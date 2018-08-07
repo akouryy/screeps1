@@ -11,7 +11,7 @@ module.exports = {
     R.u.safely(() => {
       for(const room of cx.rooms) {
         const cxr = cx.r[room.name];
-        if(cxr.creeps.length < 13) {
+        if(cxr.creeps.length < 10) {
           this.spawn(cx, room, {
             [c.roles.CHARGE]: 0.3,
             [c.roles.UP]: 0.4,
@@ -36,10 +36,10 @@ module.exports = {
     const cxr = cx.r[room.name];
 
     const eneToUse =
-      cxr.creeps.length < 3 ? 300 :
-      cxr.creeps.length < 5 ? 450 :
-      cxr.creeps.length < 8 ? 550 :
-      cxr.creeps.length < 10 ? 650 :
+      cxr.creeps.length < 2 ? 300 :
+      cxr.creeps.length < 4 ? 450 :
+      cxr.creeps.length < 6 ? 550 :
+      cxr.creeps.length < 8 ? 650 :
       800;
     if(Game.spawns.pyon.room.energyAvailable < eneToUse) return;
 
