@@ -37,7 +37,7 @@ const exp = module.exports = {
           ds.structureType === STRUCTURE_ROAD && ds.hits < ds.hitsMax,
       }), ds => ds.hits / ds.hitsMax)
     );
-    const containers = rooms.map(r =>
+    const damagedContainers = rooms.map(r =>
       _.sortBy(r.find(FIND_STRUCTURES, {
         filter: ds =>
           ds.structureType === STRUCTURE_CONTAINER && ds.hits < ds.hitsMax,
@@ -46,7 +46,27 @@ const exp = module.exports = {
 
     const roomSpecific = R.a.mapObj(rooms, room => {
       const creeps = room.find(FIND_MY_CREEPS);
+      const attackers = room.find(FIND_HOSTILE_CREEPS, {
+        filter: c =>
+          c.getActiveBodyparts(ATTACK) + c.getActiveBodyparts(RANGED_ATTACK) > 0
+      });
+      const attacked = attackers.length > 0;
+      R.u.safely(() => {
+        if(attacked) {
+          room.memory.attackedLog = room.memory.attackedLog || {};
+          attackers.forEach(a => {
+            room.memory.attackedLog[a.owner.username] =
+              (room.memory.attackedLog[a.owner.username] || 0) + 1;
+          });
+        }
+      });
+
       const sources = room.find(FIND_SOURCES);
+      const withdrawTargets =
+        room.find(FIND_TOMBSTONES).concat(
+          room.find(FIND_STRUCTURES, { filter: s => s.structureType === STRUCTURE_CONTAINER }),
+        );
+      const sourceLikes = _.shuffle(withdrawTargets.concat(sources));
       const cSites = room.find(FIND_CONSTRUCTION_SITES);
 
       const spawnsUnfilled = room.find(FIND_STRUCTURES, {
@@ -59,9 +79,12 @@ const exp = module.exports = {
         [C.NormalCharaStates.WORK_SPAWN]:
           spawnsUnfilled.length === 0 ? 0 :
           creeps.length > 11 ? 0 : creeps.length > 7 ? 2 : 5,
-        [C.NormalCharaStates.WORK_UP]: 4,
-        [C.NormalCharaStates.WORK_TOWER]: 1.5,
-        [C.NormalCharaStates.WORK_BUILD]: cSites.length > 10 ? 2 : creeps.length > 5 && cSites.length > 0 ? 1 : 0,
+        [C.NormalCharaStates.WORK_UP]: attacked ? 3 : 4,
+        [C.NormalCharaStates.WORK_TOWER]: attacked ? 5 : 2.5,
+        [C.NormalCharaStates.WORK_BUILD]:
+          cSites.length > 10 && !attacked ? 2 :
+          creeps.length > 5 && cSites.length > 0 && !attacked ? 1 :
+          0,
       };
 
       const sourcesBalance = {
@@ -70,17 +93,21 @@ const exp = module.exports = {
       };
 
       return { [room.name]: {
+        attacked,
+        attackers,
         constructionSites: cSites,
         creeps,
         sources,
         sourcesBalance,
+        sourceLikes,
         spawnsUnfilled,
+        withdrawTargets,
         workBalance,
       } };
     });
 
     return {
-      containers,
+      damagedContainers,
       damagedRamparts,
       damagedRoads,
       damagedWalls,
@@ -117,6 +144,12 @@ const exp = module.exports = {
           }`;
         }).join('; ')
       );
+      if(cxr.attacked) {
+        LG.println(
+          preLog,
+          '!!! UNDER ATTACK !!!',
+        );
+      }
       if((Game.time & 15) === 1) {
         LG.println(
           preLog,
@@ -128,6 +161,13 @@ const exp = module.exports = {
               c.body.map(p => p.type[0]).join('')
             }`
           ).join(', '),
+        );
+      }
+      if((Game.time & 7) === 2) {
+        LG.println(
+          preLog,
+          `${room.name}.workBalance: `,
+          _.map(cxr.workBalance, (v, k) => `${k}: ${v}`).join(', '),
         );
       }
     }

@@ -48,28 +48,35 @@ module.exports = {
     const cxr = cx.r[chara.room.name];
     const mem = M(chara);
 
-    mem.ncSrcID = R.a.balance(
-      cxr.sourcesBalance,
-      cxr.creeps.map(c => M(c).ncSrcID),
-    );
-    if(cx.debug) {
-      LG.println(preLog, `${LG.chara(chara)} targeted source #${mem.ncSrcID}.`);
+    if(Math.random() < 0.5 && cxr.withdrawTargets.length > 0) {
+      mem.ncSrcID = R.a.sample(cxr.withdrawTargets).id;
+      if(cx.debug) {
+        LG.println(preLog, `${LG.chara(chara)} targeted withdrawee #${mem.ncSrcID}.`);
+      }
+    } else {
+      mem.ncSrcID = R.a.balance(
+        cxr.sourcesBalance,
+        cxr.creeps.map(c => M(c).ncSrcID),
+      );
+      if(cx.debug) {
+        LG.println(preLog, `${LG.chara(chara)} targeted source #${mem.ncSrcID}.`);
+      }
     }
 
     // swap
     R.u.safely(() => {
-      const sources = cx.r[chara.room.name].sources;
+      const sourceLikes = cx.r[chara.room.name].sourceLikes;
       const cr1 = chara;
       const mem1 = mem;
 
-      const src1 = sources.find(s => s.id === mem1.ncSrcID);
+      const src1 = sourceLikes.find(s => s.id === mem1.ncSrcID);
       if(!src1) return;
       const dist1 = cr1.pos.findPathTo(src1).length;
       for(const cr2 of cxr.creeps) {
         const mem2 = M(cr2);
         if(mem2.ncState !== C.NormalCharaStates.GAIN_SRC) continue;
 
-        const src2 = sources.find(s => s.id === mem2.ncSrcID);
+        const src2 = sourceLikes.find(s => s.id === mem2.ncSrcID);
         if(!src2) continue;
         const dist2 = cr2.pos.findPathTo(src2).length;
         const newDist1 = cr1.pos.findPathTo(src2).length;
@@ -112,7 +119,7 @@ module.exports = {
 
   pickEne(cx, chara) {
     if(cx.shouldPickup) {
-      const drop = chara.room.find(FIND_DROPPED_RESOURCES);
+      const drop = chara.room.find(FIND_DROPPED_RESOURCES, r => r.resourceType === RESOURCE_ENERGY);
       if(drop.length > 0) {
         const err = chara.pickup(drop[0]);
         if(err === ERR_NOT_IN_RANGE) {
@@ -131,14 +138,14 @@ module.exports = {
     mem.ncweWait = mem.ncweWait || 0;
 
     const src = (() => {
-      const sources = cx.r[chara.room.name].sources;
+      const sls = cx.r[chara.room.name].sourceLikes;
       for(let i = 0; i < 3; ++i) {
-        const src = sources.find(s => s.id === mem.ncSrcID);
+        const src = sls.find(s => s.id === mem.ncSrcID);
         if(src) return src;
         mem.ncweWait = 0;
         this.balanceSources(cx, chara);
       }
-      return sources[0];
+      return sls[0];
     })();
 
     if((mem.ncweWait & 7) === 7) {
@@ -157,7 +164,10 @@ module.exports = {
       return { end: false };
     }
 
-    const err = chara.harvest(src);
+    const isHarvest = src instanceof Source;
+    const isPickup = src instanceof Resource;
+    const err = isHarvest ? chara.harvest(src) : chara.withdraw(src, RESOURCE_ENERGY);
+
     if(err === ERR_NOT_IN_RANGE) {
       if(cx.shouldPickup) {
         const ret = this.pickEne(cx, chara);
@@ -168,11 +178,12 @@ module.exports = {
       const lnDist = chara.pos.getRangeTo(src);
       if(lnDist === 2 || lnDist === 3) ++mem.ncweWait;
       else mem.ncweWait = 0;
+
     } else if(err === ERR_NOT_ENOUGH_RESOURCES) {
       if(cx.debug) {
         LG.println(preLog, `${LG.chara(chara)}.harvest: ${err}`);
       }
-      if(src.ticksToRegeneration > 30) {
+      if(!src.ticksToRegeneration || src.ticksToRegeneration > 30) {
         this.balanceSources(cx, chara);
       }
       chara.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
@@ -251,7 +262,6 @@ module.exports = {
     const cxr = cx.r[chara.room.name];
     const cSites = cxr.constructionSites;
     const cSite = chara.pos.findClosestByRange(_.shuffle(cSites))
-    LG.p(cSites, cSite);
     if(!cSite) {
       return { end: true };
     }
