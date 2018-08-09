@@ -62,10 +62,10 @@ const exp = module.exports = {
       });
 
       const sources = room.find(FIND_SOURCES);
-      const withdrawTargets =
-        room.find(FIND_TOMBSTONES).concat(
-          room.find(FIND_STRUCTURES, { filter: s => s.structureType === STRUCTURE_CONTAINER }),
-        );
+      const withdrawTargets = _.shuffle([].concat(
+        room.find(FIND_TOMBSTONES, { filter: s => s.store[RESOURCE_ENERGY] > 0 }),
+        room.find(FIND_STRUCTURES, { filter: s => s.structureType === STRUCTURE_CONTAINER }),
+      ));
       const sourceLikes = _.shuffle(withdrawTargets.concat(sources));
       const cSites = room.find(FIND_CONSTRUCTION_SITES);
 
@@ -87,10 +87,17 @@ const exp = module.exports = {
           0,
       };
 
-      const sourcesBalance = {
-        [sources[0].id]: sources[0].energy > 0 || sources[0].ticksToRegeneration <= 30 ? 8 : 0.01,
-        [sources[1].id]: sources[1].energy > 0 || sources[1].ticksToRegeneration <= 30 ? 4 : 0.01,
-      };
+      const sourcesBalance =
+        sources.length >= 2 ?
+        {
+          [sources[0].id]: sources[0].energy > 0 || sources[0].ticksToRegeneration <= 30 ? 8 : 0.01,
+          [sources[1].id]: sources[1].energy > 0 || sources[1].ticksToRegeneration <= 30 ? 4 : 0.01,
+        } :
+        sources.length >= 1 ?
+        {
+          [sources[0].id]: sources[0].energy > 0 || sources[0].ticksToRegeneration <= 30 ? 8 : 0.01,
+        } :
+        {};
 
       return { [room.name]: {
         attacked,
@@ -175,7 +182,7 @@ const exp = module.exports = {
       LG.println(
         preLog,
         'flags: ',
-        ['debug', 'stopSpawn', 'shouldPickup'].map(f => `${f}=${cx[f]}`).join(', ')
+        ['debug', 'stopSpawn', 'shouldPickup'].map(f => `${f}=${cx[f]}`).join(', '),
       );
     }
   },

@@ -9,10 +9,15 @@ const preLog = LG.color('#fcc', ' [nc]       ');
 module.exports = {
   tick(cx, chara) {
     const mem = M(chara);
+    const cxr = cx.r[chara.room.name];
+
     if(!mem.ncState) {
       mem.ncState = C.NormalCharaStates.GAIN_SRC;
       this.balanceSources(cx, chara);
     }
+    R.u.safely(() => {
+      if(cxr.attacked) this.attackLittle(cx, chara);
+    });
     if(mem.ncState === C.NormalCharaStates.GAIN_SRC) {
       const res = this.gainSrc(cx, chara);
       if(res.end) {
@@ -295,5 +300,16 @@ module.exports = {
       end = true;
     }
     return { end };
+  },
+
+  attackLittle(cx, chara) {
+    const cxr = cx.r[chara.room.name];
+    const atc = chara.pos.findClosestByRange(cxr.attackers);
+    if(atc) {
+      const err = chara.attack(atc);
+      if(err !== OK && err !== ERR_NOT_IN_RANGE) {
+        throw new Error(`${LG.chara(chara)}.attack(${atc.owner.username}'s creep): ${err}`);
+      }
+    }
   },
 };

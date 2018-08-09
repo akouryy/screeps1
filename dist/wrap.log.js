@@ -8,9 +8,11 @@ const LG = module.exports = {
       console.log(LG.bg('#000', LG.color('#fff',
         `[${
           LG.color('#6f0', Game.time )
-        }=0b${
-          Game.time.toString(2)
-        }]${
+        }=${
+          LG.color('#9f6', '0b' + Game.time.toString(2) )
+        }] cpu=${
+          Game.cpu.getUsed()
+        }${
           ' '.repeat(300)
         }\n` +
         msg.join('')

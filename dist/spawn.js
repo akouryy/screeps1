@@ -54,18 +54,18 @@ module.exports = {
       return err;
     };
 
-    // t = ceil((all-MOVE-(CARRY if not carrying)) * [swamp:5,road:0.5] / MOVE)
-    if(f([WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
-    if(f([WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
-    if(f([WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
-    if(f([WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
-    if(f([WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
-    if(f([WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
-    if(f([WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
-    if(f([WORK,WORK,WORK,CARRY,MOVE,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
-    if(f([WORK,WORK,WORK,CARRY,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
-    if(f([WORK,WORK,CARRY,MOVE]) === ERR_NOT_ENOUGH_ENERGY)
-    f([WORK,CARRY,MOVE]);
+    {
+      const W = WORK, C = CARRY, M = MOVE, A = ATTACK;
+      // t = ceil((all-MOVE-(CARRY if not carrying)) * [swamp:5,road:0.5] / MOVE)
+      if(f([W,W,W,W,W,A,C,M,M,M,M]) === ERR_NOT_ENOUGH_ENERGY)
+      if(f([W,W,W,W,A,A,C,M,M,M,M]) === ERR_NOT_ENOUGH_ENERGY)
+      if(f([W,W,W,W,A,C,C,M,M,M,M]) === ERR_NOT_ENOUGH_ENERGY)
+      if(f([W,W,W,W,A,C,M,M,M]) === ERR_NOT_ENOUGH_ENERGY)
+      if(f([W,W,W,A,C,M,M,M]) === ERR_NOT_ENOUGH_ENERGY)
+      if(f([W,W,W,C,M,M]) === ERR_NOT_ENOUGH_ENERGY)
+      if(f([W,W,C,M,M]) === ERR_NOT_ENOUGH_ENERGY)
+      f([W,C,M]);
+    }
   },
 
   genNewName(cx) {
