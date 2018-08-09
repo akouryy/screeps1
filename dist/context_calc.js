@@ -63,8 +63,12 @@ const exp = module.exports = {
 
       const sources = room.find(FIND_SOURCES);
       const withdrawTargets = _.shuffle([].concat(
-        room.find(FIND_TOMBSTONES, { filter: s => s.store[RESOURCE_ENERGY] > 0 }),
-        room.find(FIND_STRUCTURES, { filter: s => s.structureType === STRUCTURE_CONTAINER }),
+        room.find(FIND_TOMBSTONES, { filter: s =>
+          s.store[RESOURCE_ENERGY] > 0
+        }),
+        room.find(FIND_STRUCTURES, { filter: s =>
+          s.structureType === STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0
+        }),
       ));
       const sourceLikes = _.shuffle(withdrawTargets.concat(sources));
       const cSites = room.find(FIND_CONSTRUCTION_SITES);
