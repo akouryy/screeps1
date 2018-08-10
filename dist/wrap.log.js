@@ -1,3 +1,4 @@
+"use strict";
 let msg = [];
 const C = require('consts');
 const RColor = require('rab.color');

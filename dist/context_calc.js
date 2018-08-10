@@ -108,6 +108,8 @@ const exp = module.exports = {
         attackers,
         constructionSites: cSites,
         creeps,
+        myCharas: creeps,
+        room,
         sources,
         sourcesBalance,
         sourceLikes,
