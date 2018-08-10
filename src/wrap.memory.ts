@@ -1,4 +1,3 @@
-"use strict";
 class CreepMemory {
   constructor(creep) {
     this.creep = creep;
@@ -47,7 +46,7 @@ class CreepMemory {
   }
 }
 
-module.exports = function getMemoryManager(obj) {
+export function getMemoryManager(obj) {
   if(obj instanceof Creep) {
     return new CreepMemory(obj);
   } else {

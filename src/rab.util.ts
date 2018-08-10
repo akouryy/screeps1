@@ -1,19 +1,17 @@
-"use strict";
-const LG = require('wrap.log');
+import * as LG from 'wrap.log';
 
-module.exports = {
-  safely(f) {
-    try {
-      return f();
-    } catch(err) {
-      console.log(LG.color('red', `${err}\n${err.stack}`));
-      return this.error(err);
-    }
-  },
-  error(error) {
-    return {
-      isError: true,
-      error,
-    };
-  },
-};
+export function safely(f) {
+  try {
+    return f();
+  } catch(err) {
+    console.log(LG.color('red', `${err}\n${err.stack}`));
+    return error(err);
+  }
+}
+
+export function error(error) {
+  return {
+    isError: true,
+    error,
+  };
+}

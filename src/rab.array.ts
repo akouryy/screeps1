@@ -1,5 +1,4 @@
-"use strict";
-const c = require('consts');
+import * as c from 'consts';
 
 module.exports = {
     sample: arr => arr[0 | Math.random() * arr.length],

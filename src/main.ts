@@ -1,17 +1,15 @@
-"use strict";
-// uploaded by grunt-screeps
-const c = require('consts');
-const R = require('rab');
-const LG = require('wrap.log');
-const normalChara = require('chara.normal');
-const contextCalc = require('context_calc');
-const spawn = require('spawn');
-const wroom = require('wrap.room');
-const roleTower = require('role.tower');
+import * as c from 'consts';
+import * as R from 'rab';
+import * as LG from 'wrap.log';
+import * as normalChara from 'chara.normal';
+import * as contextCalc from 'context_calc';
+import * as spawn from 'spawn';
+import * as wroom from 'wrap.room';
+import * as roleTower from 'role.tower';
 
 const preLog = ' [main]     ';
 
-module.exports.loop = function loop() {
+export function loop() {
   const cx = contextCalc.calc();
   // R.u.safely(() => wroom.safemode(Game.spawns.pyon.room));
   R.u.safely(() => spawn.tick(cx));
