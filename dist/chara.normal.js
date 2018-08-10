@@ -53,12 +53,12 @@ module.exports = {
     const cxr = cx.r[chara.room.name];
     const mem = M(chara);
 
-    if(Math.random() < (cxr.attacked ? 0.3 : 1) && cxr.withdrawTargets.length > 0) {
+    /*if(Math.random() < (cxr.attacked ? 0.3 : 1) && cxr.withdrawTargets.length > 0) {
       mem.ncSrcID = R.a.sample(cxr.withdrawTargets).id;
       if(cx.debug) {
         LG.println(preLog, `${LG.chara(chara)} targeted withdrawee #${mem.ncSrcID}.`);
       }
-    } else {
+    } else*/ {
       mem.ncSrcID = R.a.balance(
         cxr.sourcesBalance,
         cxr.creeps.map(c => M(c).ncSrcID),
