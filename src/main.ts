@@ -16,7 +16,6 @@ export const loop = ErrorMapper.wrap(() => {
   LG.safely(() => spawn.tick(cx));
 
   for (const ts of cx.towers) {
-    LG.p(ts.map(s => s.structureType));
     for (const tower of ts) {
       LG.safely(() => {
         roleTower.tick(cx, tower);

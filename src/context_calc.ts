@@ -126,7 +126,7 @@ export function calc(): Context {
         spawnsUnfilled.length === 0 ? 0 :
         creeps.length > 11 ? 0 : creeps.length > 7 ? 2 : 5,
       [C.NormalCharaStates.WORK_UP]: attacked ? 3 : 4,
-      [C.NormalCharaStates.WORK_TOWER]: attacked ? 5 : 2.5,
+      [C.NormalCharaStates.WORK_TOWER]: attacked ? 5 : 4,
       [C.NormalCharaStates.WORK_BUILD]:
         cSites.length > 10 && !attacked ? 2 :
         creeps.length > 5 && cSites.length > 0 && !attacked ? 1 :
