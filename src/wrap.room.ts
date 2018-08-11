@@ -1,7 +1,7 @@
 import * as R from 'rab';
 
-export function safemode(room) {
-  if(room.controller.safeMode) return;
+export function safemode(room: Room) {
+  if(!room.controller || room.controller.safeMode) return;
   const err = room.controller.activateSafeMode();
   switch(err) {
     case OK:

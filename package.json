@@ -1,11 +1,18 @@
 {
   "name": "screepyon",
+  "version": "2.0.0",
   "scripts": {
     "deploy": "grunt screeps"
   },
   "devDependencies": {
+    "@types/lodash": "^3.10.2",
+    "@types/node": "^10.5.7",
+    "@types/screeps": "^2.4.0",
     "grunt": "^1.0.3",
     "grunt-cli": "^1.2.0",
-    "grunt-screeps": "^1.4.0"
+    "grunt-contrib-watch": "^1.1.0",
+    "grunt-screeps": "^1.4.0",
+    "grunt-ts": "^6.0.0-beta.21",
+    "typescript": "^3.0.1"
   }
 }

@@ -1,15 +1,16 @@
 import * as C from 'consts';
-import * as RColor from 'rab.color';
+import { Context } from 'context_calc';
+import * as R from 'rab';
 
-let msg = [];
+let msg = Array<string>();
 
-export function tickEnd(cx) {
-  if(cx.debug) {
-    console.log(LG.bg('#000', LG.color('#fff',
+export function tickEnd(cx: Context) {
+  if(cx.flags.debug) {
+    console.log(bg('#000', color('#fff',
       `[${
-        LG.color('#6f0', Game.time )
+        color('#6f0', Game.time )
       }=${
-        LG.color('#9f6', '0b' + Game.time.toString(2) )
+        color('#9f6', '0b' + Game.time.toString(2) )
       }] cpu=${
         Game.cpu.getUsed()
       }${
@@ -21,19 +22,19 @@ export function tickEnd(cx) {
   }
 }
 
-export function print(...m) {
+export function print(...m: Array<any>) {
   msg.push(...m);
 }
 
-export function println(...m) {
+export function println(...m: Array<any>) {
   msg.push(...m, '\n');
 }
 
-export function p(...m) {
-  msg.push(m.map(n => LG.stringify(n)).join('\n'), '\n');
+export function p(...m: Array<any>) {
+  msg.push(m.map(n => stringify(n)).join('\n'), '\n');
 }
 
-export function stringify(m) {
+export function stringify(m: any): string {
   try {
     return JSON.stringify(m);
   } catch(_e) {
@@ -41,19 +42,23 @@ export function stringify(m) {
   }
 }
 
-export function chara(c) {
-  return LG.bg(C.charaBGs[c.name] || 'inherit',
-    LG.color(C.charaColors[c.name] || 'inherit', c.name));
-}
-
-export function color(c, m) {
+export function color(c: string, m: any): string {
   return `<span style="color:${c}">${m}</span>`;
 }
 
-export function bg(c, m) {
+export function bg(c: string, m: any): string {
   return `<span style="background-color:${c}">${m}</span>`;
 }
 
-export function bold(m) {
+export function bold(m: any): string {
   return `<b>${m}</b>`;
+}
+
+export function safely<T>(f: () => T): T | undefined {
+  try {
+    return f();
+  } catch(err) {
+    console.log(color('red', `${err}\n${err.stack}`));
+    return;
+  }
 }

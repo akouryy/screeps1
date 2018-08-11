@@ -2,3 +2,5 @@
 /node_modules/
 /settings.yaml
 /temp/
+/tscommand-*.tmp.txt
+/.tscache

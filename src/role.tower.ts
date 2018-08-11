@@ -1,8 +1,10 @@
 import * as c from 'consts';
 import * as R from 'rab';
+import { Context } from 'context_calc';
 
-export function tick(cx, tower) {
+export function tick(cx: Context, tower: StructureTower) {
   const cxr = cx.r[tower.room.name];
+  if(cxr === undefined) return;
 
   const closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
   if(closestHostile) {
@@ -19,7 +21,7 @@ export function tick(cx, tower) {
   const ds = dss[0][0 | Math.random() * Math.min(3, dss.length)];
   if(ds) {
     const err = tower.repair(ds);
-    if(cx.debug && err !== OK && err !== ERR_NOT_ENOUGH_ENERGY) {
+    if(cx.flags.debug && err !== OK && err !== ERR_NOT_ENOUGH_ENERGY) {
       console.log(ds.structureType, ds.id, err);
     }
   }

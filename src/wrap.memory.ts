@@ -1,5 +1,7 @@
-class CreepMemory {
-  constructor(creep) {
+export class CreepMemoryWrapper {
+  creep: Creep;
+
+  constructor(creep: Creep) {
     this.creep = creep;
   }
 
@@ -45,11 +47,3 @@ class CreepMemory {
     this.creep.memory.taste = val;
   }
 }
-
-export function getMemoryManager(obj) {
-  if(obj instanceof Creep) {
-    return new CreepMemory(obj);
-  } else {
-    throw new Error(`unknown object: ${obj}`);
-  }
-};

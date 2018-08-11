@@ -1,16 +1,17 @@
 import * as c from 'consts';
 import * as R from 'rab';
 import * as LG from 'wrap.log';
+import { Context } from 'context_calc';
 
 const preLog = LG.color('#c99', ' [spn]      ');
 
-export function tick(cx) {
-  this.clearMemory(cx);
-  R.u.safely(() => {
+export function tick(cx: Context) {
+  clearMemory(cx);
+  LG.safely(() => {
     for(const room of cx.rooms) {
       const cxr = cx.r[room.name];
-      if(cxr.creeps.length < 10) {
-        this.spawn(cx, room, {
+      if(cxr !== undefined && cxr.creeps.length < 10) {
+        spawn(cx, room, {
           [c.roles.CHARGE]: 0.3,
           [c.roles.UP]: 0.4,
           [c.roles.BUILD]: 0.3,
@@ -20,7 +21,7 @@ export function tick(cx) {
   });
 }
 
-export function clearMemory(cx) {
+export function clearMemory(cx: Context) {
   for(const name in Memory.creeps) {
     if(!Game.creeps[name]) {
       delete Memory.creeps[name];
@@ -29,9 +30,10 @@ export function clearMemory(cx) {
   }
 }
 
-export function spawn(cx, room, rolePs) {
-  if(cx.stopSpawn) return;
+export function spawn(cx: Context, room: Room, rolePs: { [R in number]: number | undefined }) {
+  if(cx.flags.stopSpawn) return;
   const cxr = cx.r[room.name];
+  if(!cxr) return;
 
   const eneToUse =
     cxr.creeps.length < 2 ? 300 :
@@ -41,8 +43,8 @@ export function spawn(cx, room, rolePs) {
     800;
   if(Game.spawns.pyon.room.energyAvailable < eneToUse) return;
 
-  const f = parts => {
-    const name = this.genNewName(cx);
+  const f = (parts: Array<BodyPartConstant>) => {
+    const name = genNewName(cx);
     const taste = 0 | Math.random() * (1 << 30);
     const err = Game.spawns.pyon.spawnCreep(parts, name, { memory: { taste }});
 
@@ -66,11 +68,11 @@ export function spawn(cx, room, rolePs) {
   }
 }
 
-export function genNewName(cx) {
-  const ns = c.creepNames.filter(n => !Game.creeps[n]);
+export function genNewName(cx: Context): c.CharaName {
+  const ns = c.charaNames.filter(n => !Game.creeps[n]);
   if(ns.length > 0) {
     return R.a.sample(ns);
   } else {
-    return Math.random().toString();
+    throw new Error('all chara names have been used.');
   }
 }

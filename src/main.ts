@@ -12,17 +12,18 @@ const preLog = ' [main]     ';
 export function loop() {
   const cx = contextCalc.calc();
   // R.u.safely(() => wroom.safemode(Game.spawns.pyon.room));
-  R.u.safely(() => spawn.tick(cx));
+  LG.safely(() => spawn.tick(cx));
 
   for(const ts of cx.towers) {
     for(const tower of ts) {
-      R.u.safely(() => {
+      LG.safely(() => {
         roleTower.tick(cx, tower);
       });
     }
   }
 
-  R.u.safely(() => {
+  /*
+  LG.safely(() => {
     if(Game.creeps.claimer_) {
       const creep = Game.creeps.claimer_;
       if(creep.room.name === 'W51S52') {
@@ -36,21 +37,22 @@ export function loop() {
       }
     }
   });
+  */
 
-  R.u.safely(() => {
+  LG.safely(() => {
     // creepsManager.tick(cx);
-    for(const room of cx.rooms) {
-      const cxr = cx.r[room.name];
+    _.forEach(cx.r, (cxr, room) => {
+      if(!cxr) return;
 
-      for(const creep of cxr.creeps) {
-        R.u.safely(() => {
-          normalChara.tick(cx, creep);
+      for(const chara of cxr.myCharas) {
+        LG.safely(() => {
+          normalChara.tick(cx, chara);
         });
       }
-    }
+    });
   });
 
-  if(cx.debug) R.u.safely(() => contextCalc.log(contextCalc.calc()));
+  if(cx.flags.debug) LG.safely(() => contextCalc.log(contextCalc.calc()));
 
-  R.u.safely(() => LG.tickEnd(cx));
+  LG.safely(() => LG.tickEnd(cx));
 }

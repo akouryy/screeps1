@@ -1,12 +1,52 @@
+import _ from 'lodash';
 import * as C from 'consts';
+import { Context } from 'context_calc';
 import * as M from 'wrap.memory';
 import * as R from 'rab';
+import * as Charas from 'wrap.chara';
 import * as LG from 'wrap.log';
 
 const preLog = LG.color('#ccf', ' [cx]       ');
 
-export function calc() {
-  const flg = n => Game.flags[n] && Game.flags[n].color !== COLOR_WHITE;
+export type WithdrawTarget =  Tombstone | StructureContainer;
+export type SourceLike = Source | WithdrawTarget;
+export type SpawnLike = StructureSpawn | StructureExtension;
+export type SourceBalance = { [SourceID in string]?: number };
+export type WorkBalance = { [Work in number]: number };
+export type Flags = {
+  debug: boolean;
+  shouldPickup: boolean;
+  stopSpawn: boolean;
+}
+
+export interface RoomSpecificContext {
+  attacked: boolean;
+  attackers: Array<Creep>;
+  constructionSites: Array<ConstructionSite>;
+  creeps: Array<Creep>;
+  myCharas: Array<Charas.Chara>;
+  room: Room;
+  sources: Array<Source>;
+  sourcesBalance: SourceBalance;
+  sourceLikes: Array<SourceLike>;
+  spawnsUnfilled: Array<SpawnLike>;
+  withdrawTargets: Array<WithdrawTarget>;
+  workBalance: WorkBalance;
+}
+
+export interface Context {
+  damagedContainers: Array<Array<StructureContainer>>;
+  damagedRamparts: Array<Array<StructureRampart>>;
+  damagedRoads: Array<Array<StructureRoad>>;
+  damagedWalls: Array<Array<StructureWall>>;
+  flags: Flags;
+  rooms: Array<Room>;
+  r: { [RoomName in string]?: RoomSpecificContext };
+  towers: Array<Array<StructureTower>>;
+};
+
+export function calc(): Context {
+  const flg = (n: string) => Game.flags[n] && Game.flags[n].color !== COLOR_WHITE;
 
   const debug = flg('_DEBUG');
   const stopSpawn = flg('_STOPSPAWN');
@@ -14,42 +54,44 @@ export function calc() {
 
   const spawningCreepNames = Game.spawns.pyon.spawning ? [Game.spawns.pyon.spawning.name] : [];
 
-  const rooms = _.values(Game.rooms);
+  const rooms = Object.values(Game.rooms);
 
-  const towers = rooms.map(r => r.find(FIND_MY_STRUCTURES, {filter: {structureType: STRUCTURE_TOWER}}));
+  const towers = rooms.map(r => r.find(FIND_MY_STRUCTURES, s => s.structureType === STRUCTURE_TOWER) as Array<StructureTower>);
   const damagedWalls = rooms.map(r =>
     _.sortBy(r.find(FIND_STRUCTURES, {
       filter: ds =>
         ds.structureType === STRUCTURE_WALL && ds.hits < ds.hitsMax,
-    }), ds => ds.hits / ds.hitsMax)
+    }) as Array<StructureWall>, ds => ds.hits / ds.hitsMax)
   );
   const damagedRamparts = rooms.map(r =>
     _.sortBy(r.find(FIND_STRUCTURES, {
       filter: ds =>
         ds.structureType === STRUCTURE_RAMPART && ds.hits < ds.hitsMax,
-    }), ds => ds.hits / ds.hitsMax)
+    }) as Array<StructureRampart>, ds => ds.hits / ds.hitsMax)
   );
   const damagedRoads = rooms.map(r =>
     _.sortBy(r.find(FIND_STRUCTURES, {
       filter: ds =>
         ds.structureType === STRUCTURE_ROAD && ds.hits < ds.hitsMax,
-    }), ds => ds.hits / ds.hitsMax)
+    }) as Array<StructureRoad>, ds => ds.hits / ds.hitsMax)
   );
   const damagedContainers = rooms.map(r =>
     _.sortBy(r.find(FIND_STRUCTURES, {
       filter: ds =>
         ds.structureType === STRUCTURE_CONTAINER && ds.hits < ds.hitsMax,
-    }), ds => ds.hits / ds.hitsMax)
+    }) as Array<StructureContainer>, ds => ds.hits / ds.hitsMax)
   );
 
-  const roomSpecific = R.a.mapObj(rooms, room => {
-    const creeps = room.find(FIND_MY_CREEPS);
+  const roomSpecific = R.a.mapObj(rooms, (room: Room): { [RN in string]?: RoomSpecificContext } => {
+    const creeps: Array<Creep> = room.find(FIND_MY_CREEPS);
+    const myCharas: Array<Charas.Chara> = creeps.filter(Charas.isChara, Charas);
+
     const attackers = room.find(FIND_HOSTILE_CREEPS, {
       filter: c =>
         c.getActiveBodyparts(ATTACK) + c.getActiveBodyparts(RANGED_ATTACK) > 0
     });
     const attacked = attackers.length > 0;
-    R.u.safely(() => {
+    LG.safely(() => {
       if(attacked) {
         room.memory.attackedLog = room.memory.attackedLog || {};
         attackers.forEach(a => {
@@ -59,25 +101,25 @@ export function calc() {
       }
     });
 
-    const sources = room.find(FIND_SOURCES);
-    const withdrawTargets = _.shuffle([].concat(
+    const sources = room.find(FIND_SOURCES) as Array<Source>;
+    const withdrawTargets = _.shuffle(Array<WithdrawTarget>().concat(
       room.find(FIND_TOMBSTONES, { filter: s =>
         s.store[RESOURCE_ENERGY] > 0
-      }),
+      }) as Array<Tombstone>,
       room.find(FIND_STRUCTURES, { filter: s =>
         s.structureType === STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0
-      }),
+      }) as Array<StructureContainer>,
     ));
-    const sourceLikes = _.shuffle(withdrawTargets.concat(sources));
+    const sourceLikes = _.shuffle(Array<SourceLike>().concat(withdrawTargets, sources));
     const cSites = room.find(FIND_CONSTRUCTION_SITES);
 
     const spawnsUnfilled = room.find(FIND_STRUCTURES, {
-      filter: structure =>
-        [STRUCTURE_EXTENSION, STRUCTURE_SPAWN].includes(structure.structureType) &&
-          structure.energy < structure.energyCapacity,
-    });
+      filter: (structure: Structure) =>
+        [STRUCTURE_EXTENSION as StructureConstant, STRUCTURE_SPAWN].includes(structure.structureType) &&
+          (structure as SpawnLike).energy < (structure as SpawnLike).energyCapacity,
+    }) as Array<SpawnLike>;
 
-    const workBalance = {
+    const workBalance: WorkBalance = {
       [C.NormalCharaStates.WORK_SPAWN]:
         spawnsUnfilled.length === 0 ? 0 :
         creeps.length > 11 ? 0 : creeps.length > 7 ? 2 : 5,
@@ -89,7 +131,7 @@ export function calc() {
         0,
     };
 
-    const sourcesBalance =
+    const sourcesBalance: SourceBalance =
       sources.length >= 2 ?
       {
         [sources[0].id]: sources[0].energy > 0 || sources[0].ticksToRegeneration <= 30 ? 8 : 0.01,
@@ -106,7 +148,7 @@ export function calc() {
       attackers,
       constructionSites: cSites,
       creeps,
-      myCharas: creeps,
+      myCharas,
       room,
       sources,
       sourcesBalance,
@@ -122,28 +164,31 @@ export function calc() {
     damagedRamparts,
     damagedRoads,
     damagedWalls,
-    debug,
+    flags: {
+      debug,
+      shouldPickup,
+      stopSpawn,
+    },
     rooms,
     r: roomSpecific,
-    shouldPickup,
-    stopSpawn,
     towers,
   };
 }
 
-export function log(cx) {
+export function log(cx: Context) {
   for(const room of cx.rooms) {
     const cxr = cx.r[room.name];
+    if(cxr === undefined) continue;
 
     LG.println(
       preLog,
-      `${room.name}.creeps[${cxr.creeps.length}]: `,
-      cxr.creeps.map(c => {
-        const mem = M(c);
+      `${room.name}.charas[${cxr.myCharas.length}/${cxr.creeps.length}]: `,
+      cxr.myCharas.map((c: Charas.Chara) => {
+        const mem = new M.CreepMemoryWrapper(c);
         return `${
-          LG.chara(c)
+          Charas.logFormat(c)
         }${
-          C.NormalCharaStateToShortName[mem.ncState]
+          mem.ncState && C.NormalCharaStateToShortName[mem.ncState]
         }${
           mem.ncState === C.NormalCharaStates.GAIN_SRC ?
             mem.ncSrcID && mem.ncSrcID.substr(-3) :
@@ -186,7 +231,8 @@ export function log(cx) {
     LG.println(
       preLog,
       'flags: ',
-      ['debug', 'stopSpawn', 'shouldPickup'].map(f => `${f}=${cx[f]}`).join(', '),
+      Array<keyof Flags>('debug', 'stopSpawn', 'shouldPickup')
+        .map(f => `${f}=${cx.flags[f]}`).join(', '),
     );
   }
 }

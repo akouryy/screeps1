@@ -1,4 +1,4 @@
-export function myBrightness(color) {
+export function myBrightness(color: string): number {
   {
     const m = /^#([0-9a-fA-F]{3})$/.exec(color);
     if(m) {
