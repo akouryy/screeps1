@@ -1,5 +1,6 @@
 import * as c from 'consts';
 import * as R from 'rab';
+import * as LG from 'wrap.log';
 import { Context } from 'context_calc';
 
 export function tick(cx: Context, tower: StructureTower) {

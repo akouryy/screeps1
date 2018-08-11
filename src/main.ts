@@ -6,16 +6,18 @@ import * as contextCalc from 'context_calc';
 import * as spawn from 'spawn';
 import * as wroom from 'wrap.room';
 import * as roleTower from 'role.tower';
+import { ErrorMapper } from 'utils/ErrorMapper';
 
 const preLog = ' [main]     ';
 
-export function loop() {
+export const loop = ErrorMapper.wrap(() => {
   const cx = contextCalc.calc();
   // R.u.safely(() => wroom.safemode(Game.spawns.pyon.room));
   LG.safely(() => spawn.tick(cx));
 
-  for(const ts of cx.towers) {
-    for(const tower of ts) {
+  for (const ts of cx.towers) {
+    LG.p(ts.map(s => s.structureType));
+    for (const tower of ts) {
       LG.safely(() => {
         roleTower.tick(cx, tower);
       });
@@ -42,9 +44,9 @@ export function loop() {
   LG.safely(() => {
     // creepsManager.tick(cx);
     _.forEach(cx.r, (cxr, room) => {
-      if(!cxr) return;
+      if (!cxr) return;
 
-      for(const chara of cxr.myCharas) {
+      for (const chara of cxr.myCharas) {
         LG.safely(() => {
           normalChara.tick(cx, chara);
         });
@@ -52,7 +54,7 @@ export function loop() {
     });
   });
 
-  if(cx.flags.debug) LG.safely(() => contextCalc.log(contextCalc.calc()));
+  if (cx.flags.debug) LG.safely(() => contextCalc.log(contextCalc.calc()));
 
   LG.safely(() => LG.tickEnd(cx));
-}
+});

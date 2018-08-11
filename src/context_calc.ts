@@ -56,7 +56,9 @@ export function calc(): Context {
 
   const rooms = Object.values(Game.rooms);
 
-  const towers = rooms.map(r => r.find(FIND_MY_STRUCTURES, s => s.structureType === STRUCTURE_TOWER) as Array<StructureTower>);
+  const towers = rooms.map(r => r.find(FIND_MY_STRUCTURES, {
+    filter: s => s.structureType === STRUCTURE_TOWER
+  }) as Array<StructureTower>);
   const damagedWalls = rooms.map(r =>
     _.sortBy(r.find(FIND_STRUCTURES, {
       filter: ds =>

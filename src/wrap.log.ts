@@ -1,6 +1,7 @@
 import * as C from 'consts';
 import { Context } from 'context_calc';
 import * as R from 'rab';
+import { ErrorMapper } from 'utils/ErrorMapper';
 
 let msg = Array<string>();
 
@@ -56,7 +57,7 @@ export function bold(m: any): string {
 
 export function safely<T>(f: () => T): T | undefined {
   try {
-    return f();
+    return ErrorMapper.wrap(f)();
   } catch(err) {
     console.log(color('red', `${err}\n${err.stack}`));
     return;
