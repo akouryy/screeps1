@@ -3,7 +3,7 @@ import { Context } from 'context_calc';
 import * as M from 'wrap.memory';
 import * as R from 'rab';
 import { Chara } from 'wrap.chara';
-import * as WChara from 'wrap.chara';
+import * as Charas from 'wrap.chara';
 import * as LG from 'wrap.log';
 
 const preLog = LG.color('#fcc', ' [nc]       ');
@@ -56,18 +56,18 @@ export function balanceSources(cx: Context, chara: Chara) {
   if(!cxr) return;
   const mem = new M.CreepMemoryWrapper(chara);
 
-  /*if(Math.random() < (cxr.attacked ? 0.3 : 1) && cxr.withdrawTargets.length > 0) {
+  if(Math.random() < (cxr.attacked ? 0.3 : 0.3) && cxr.withdrawTargets.length > 0) {
     mem.ncSrcID = R.a.sample(cxr.withdrawTargets).id;
-    if(cx.debug) {
-      LG.println(preLog, `${LG.chara(chara)} targeted withdrawee #${mem.ncSrcID}.`);
+    if(cx.flags.debug) {
+      LG.println(preLog, `${Charas.logFormat(chara)} targeted withdrawee #${mem.ncSrcID}.`);
     }
-  } else*/ {
+  } else {
     mem.ncSrcID = R.a.balance(
       cxr.sourcesBalance,
       cxr.creeps.map(c => new M.CreepMemoryWrapper(c).ncSrcID),
     );
     if(cx.flags.debug) {
-      LG.println(preLog, `${WChara.logFormat(chara)} targeted source #${mem.ncSrcID}.`);
+      LG.println(preLog, `${Charas.logFormat(chara)} targeted source #${mem.ncSrcID}.`);
     }
   }
 
@@ -93,7 +93,7 @@ export function balanceSources(cx: Context, chara: Chara) {
         mem1.ncSrcID = src2.id;
         mem2.ncSrcID = src1.id;
         if(cx.flags.debug) {
-          LG.println(preLog, `Swapped sources of ${WChara.logFormat(cr1)} and ${WChara.logFormat(cr2)}.`);
+          LG.println(preLog, `Swapped sources of ${Charas.logFormat(cr1)} and ${Charas.logFormat(cr2)}.`);
         }
         break;
       }
@@ -135,7 +135,7 @@ export function pickEne(cx: Context, chara: Chara) {
         chara.moveTo(drop[0], {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
       }
       if(cx.flags.debug && err !== OK) {
-        LG.println(preLog, `err: ${WChara.logFormat(chara)}.pickup: ${err}.`);
+        LG.println(preLog, `err: ${Charas.logFormat(chara)}.pickup: ${err}.`);
       }
       return { end: chara.carry.energy >= chara.carryCapacity - 4 };
     }
@@ -165,7 +165,7 @@ export function gainSrc(cx: Context, chara: Chara) {
     const dir = _.sample([TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT]);
     const err = chara.move(dir);
     if(cx.flags.debug) {
-      LG.println(preLog, `${WChara.logFormat(chara)}<${mem.ncweWait}>'s breakthrough to ${dir}: ${err}`);
+      LG.println(preLog, `${Charas.logFormat(chara)}<${mem.ncweWait}>'s breakthrough to ${dir}: ${err}`);
       chara.say('打開');
     }
     if((mem.ncweWait & 31) === 31) {
@@ -197,7 +197,7 @@ export function gainSrc(cx: Context, chara: Chara) {
 
   } else if(err === ERR_NOT_ENOUGH_RESOURCES) {
     if(cx.flags.debug) {
-      LG.println(preLog, `${WChara.logFormat(chara)}.harvest: ${err}`);
+      LG.println(preLog, `${Charas.logFormat(chara)}.harvest: ${err}`);
     }
     if(!(src instanceof Source) || src.ticksToRegeneration > 30) {
       balanceSources(cx, chara);
@@ -205,7 +205,7 @@ export function gainSrc(cx: Context, chara: Chara) {
     chara.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
 
   } else if(err !== OK) {
-    LG.println(preLog, `${WChara.logFormat(chara)}.harvest: ${err}`);
+    LG.println(preLog, `${Charas.logFormat(chara)}.harvest: ${err}`);
   }
   return { end: chara.carry.energy >= chara.carryCapacity - 4 };
 }
@@ -220,7 +220,7 @@ export function balanceWorkSpawn(cx: Context, chara: Chara) {
   }
   new M.CreepMemoryWrapper(chara).ncWsSpnID = spawn.id;
   if(cx.flags.debug) {
-    LG.println(preLog, `${WChara.logFormat(chara)} targeted spawnex #${spawn.id}`);
+    LG.println(preLog, `${Charas.logFormat(chara)} targeted spawnex #${spawn.id}`);
   }
   return undefined;
 }
@@ -289,7 +289,7 @@ export function balanceWorkBuild(cx: Context, chara: Chara) {
     return { end: true };
   }
   new M.CreepMemoryWrapper(chara).ncWbTgtID = cSite.id;
-  LG.println(preLog, `${WChara.logFormat(chara)} targeted build #${cSite.id}.`);
+  LG.println(preLog, `${Charas.logFormat(chara)} targeted build #${cSite.id}.`);
   return undefined;
 }
 
@@ -329,7 +329,7 @@ export function attackLittle(cx: Context, chara: Chara) {
   if(atc) {
     const err = chara.attack(atc);
     if(err !== OK && err !== ERR_NOT_IN_RANGE) {
-      throw new Error(`${WChara.logFormat(chara)}.attack(${atc.owner.username}'s creep): ${err}`);
+      throw new Error(`${Charas.logFormat(chara)}.attack(${atc.owner.username}'s creep): ${err}`);
     }
   }
 }

@@ -16,7 +16,7 @@ export function tick(cx: Context, tower: StructureTower) {
   const dsss = (
     cxr.attacked ?
       [cx.damagedWalls, cx.damagedWalls, cx.damagedRamparts, cx.damagedRamparts, cx.damagedRoads, cx.damagedContainers] :
-      [cx.damagedWalls, cx.damagedRamparts, cx.damagedRoads, cx.damagedContainers]
+      [cx.damagedRamparts, cx.damagedWalls, cx.damagedRamparts, cx.damagedRoads, cx.damagedContainers]
   ).filter(dss => dss.length > 0);
   const dss = R.a.sample(dsss);
   const ds = dss[0][0 | Math.random() * Math.min(3, dss.length)];
