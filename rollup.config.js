@@ -6,6 +6,7 @@ import commonjs from "rollup-plugin-commonjs";
 import typescript from "rollup-plugin-typescript2";
 import screeps from "rollup-plugin-screeps";
 import { terser } from "rollup-plugin-terser";
+const fs = require('fs');
 
 let cfg;
 const dest = process.env.DEST;
@@ -20,7 +21,7 @@ export default {
   output: {
     file: "dist/main.js",
     format: "cjs",
-    sourcemap: true
+    sourcemap: true,
   },
 
   plugins: [
@@ -29,6 +30,18 @@ export default {
     commonjs(),
     typescript({ tsconfig: "./tsconfig.json" }),
     terser(),
-    screeps({ config: cfg, dryRun: cfg == null })
-  ]
-}
+    {
+      name: "myReplace",
+
+      onwrite(options, _bundle) {
+        if(options.sourcemap) {
+          const fname = options.file + '.map';
+          let data = fs.readFileSync(fname).toString();
+          data = data.replace('\u2028', '\\u2028').replace('\u2029', '\\u2029');
+          fs.writeFileSync(fname, data);
+        }
+      },
+    },
+    screeps({ config: cfg, dryRun: cfg == null }),
+  ],
+};

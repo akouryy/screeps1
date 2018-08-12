@@ -58,7 +58,7 @@ export function bold(m: any): string {
 
 export function safely<T>(f: () => T): T | undefined {
   try {
-    return f(); //ErrorMapper.wrap(f)();
+    return ErrorMapper.wrap(f)();
   } catch(err) {
     console.log(color('red', `${err}\n${err.stack}`));
     return;
