@@ -5,12 +5,13 @@ import resolve from "rollup-plugin-node-resolve";
 import commonjs from "rollup-plugin-commonjs";
 import typescript from "rollup-plugin-typescript2";
 import screeps from "rollup-plugin-screeps";
+import { terser } from "rollup-plugin-terser";
 
 let cfg;
 const dest = process.env.DEST;
-if (!dest) {
+if(!dest) {
   console.log("No destination specified - code will be compiled but not uploaded");
-} else if ((cfg = require("./screeps.json")[dest]) == null) {
+} else if((cfg = require("./screeps.json")[dest]) == null) {
   throw new Error("Invalid upload destination");
 }
 
@@ -26,7 +27,8 @@ export default {
     clear({ targets: ["dist"] }),
     resolve(),
     commonjs(),
-    typescript({tsconfig: "./tsconfig.json"}),
-    screeps({config: cfg, dryRun: cfg == null})
+    typescript({ tsconfig: "./tsconfig.json" }),
+    terser(),
+    screeps({ config: cfg, dryRun: cfg == null })
   ]
 }
