@@ -15,6 +15,7 @@ export type SourceBalance = { [SourceID in string]?: number };
 export type WorkBalance = { [Work in number]: number };
 export type Flags = {
   debug: boolean;
+  testThrow: boolean;
   shouldPickup: boolean;
   stopSpawn: boolean;
 }
@@ -45,13 +46,11 @@ export interface Context {
   towers: Array<Array<StructureTower>>;
 };
 
+function flg(n: string): boolean {
+  return Game.flags[n] && Game.flags[n].color !== COLOR_WHITE;
+}
+
 export function calc(): Context {
-  const flg = (n: string) => Game.flags[n] && Game.flags[n].color !== COLOR_WHITE;
-
-  const debug = flg('_DEBUG');
-  const stopSpawn = flg('_STOPSPAWN');
-  const shouldPickup = flg('_PICKUP');
-
   const spawningCreepNames = Game.spawns.pyon.spawning ? [Game.spawns.pyon.spawning.name] : [];
 
   const rooms = Object.values(Game.rooms);
@@ -167,9 +166,10 @@ export function calc(): Context {
     damagedRoads,
     damagedWalls,
     flags: {
-      debug,
-      shouldPickup,
-      stopSpawn,
+      debug: flg('_DEBUG'),
+      testThrow: flg('_TEST_THROW'),
+      shouldPickup: flg('_STOPSPAWN'),
+      stopSpawn: flg('_PICKUP'),
     },
     rooms,
     r: roomSpecific,
@@ -237,5 +237,5 @@ export function log(cx: Context) {
         .map(f => `${f}=${cx.flags[f]}`).join(', '),
     );
   }
-  throw new Error('TEST');
+  if(cx.flags.testThrow) throw new Error('TEST');
 }
