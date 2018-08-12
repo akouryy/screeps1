@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import * as R from 'rab';
 
 export function safemode(room: Room) {

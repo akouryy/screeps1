@@ -7,15 +7,17 @@
     "lint": "tslint -p tsconfig.json \"src/**/*.ts\"",
     "build": "rollup -c",
     "deploy": "rollup -c --environment DEST:main",
-    "deploy-pserver": "rollup -c --environment DEST:pserver",
-    "deploy-sim": "rollup -c --environment DEST:sim",
+    "pserver": "rollup -c --environment DEST:pserver",
+    "simu": "rollup -c --environment DEST:sim",
+    "stage": "rollup -c --environment DEST:staging",
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "rollup -cw --environment DEST:main",
-    "watch-pserver": "rollup -cw --environment DEST:pserver",
-    "watch-sim": "rollup -cw --environment DEST:sim"
+    "wpserver": "rollup -cw --environment DEST:pserver",
+    "wsimu": "rollup -cw --environment DEST:sim",
+    "wstage": "rollup -cw --environment DEST:staging"
   },
   "devDependencies": {
-    "@types/lodash": "^3.10.1",
+    "@types/lodash": "^4.14.116",
     "@types/node": "^10.5.5",
     "@types/screeps": "^2.4.0",
     "rollup": "^0.63.4",
@@ -29,7 +31,7 @@
     "typescript": "^2.9.2"
   },
   "dependencies": {
-    "lodash": "^3.10.1",
+    "lodash": "^4.17.10",
     "source-map": "~0.6.1"
   }
 }

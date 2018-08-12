@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import * as C from 'consts';
 import { Context } from 'context_calc';
 import * as M from 'wrap.memory';
@@ -9,6 +10,11 @@ import * as LG from 'wrap.log';
 const preLog = LG.color('#fcc', ' [nc]       ');
 
 export function tick(cx: Context, chara: Chara) {
+  if(chara.memory.spawnedRoomName && chara.room.name !== chara.memory.spawnedRoomName) {
+    goBackToSpawnedRoom(cx, chara);
+    return;
+  }
+
   const mem = new M.CreepMemoryWrapper(chara);
   const cxr = cx.r[chara.room.name];
   if(cxr === undefined) return;
@@ -57,7 +63,7 @@ export function balanceSources(cx: Context, chara: Chara) {
   const mem = new M.CreepMemoryWrapper(chara);
 
   if(Math.random() < (cxr.attacked ? 0.3 : 0.3) && cxr.withdrawTargets.length > 0) {
-    mem.ncSrcID = R.a.sample(cxr.withdrawTargets).id;
+    mem.ncSrcID = R.a.sampleNonempty(cxr.withdrawTargets).id;
     if(cx.flags.debug) {
       LG.println(preLog, `${Charas.logFormat(chara)} targeted withdrawee #${mem.ncSrcID}.`);
     }
@@ -162,7 +168,7 @@ export function gainSrc(cx: Context, chara: Chara) {
   })();
 
   if((mem.ncweWait & 7) === 7) {
-    const dir = _.sample([TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT]);
+    const dir = R.a.sampleNonempty([TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT]);
     const err = chara.move(dir);
     if(cx.flags.debug) {
       LG.println(preLog, `${Charas.logFormat(chara)}<${mem.ncweWait}>'s breakthrough to ${dir}: ${err}`);
@@ -332,4 +338,14 @@ export function attackLittle(cx: Context, chara: Chara) {
       throw new Error(`${Charas.logFormat(chara)}.attack(${atc.owner.username}'s creep): ${err}`);
     }
   }
+}
+
+export function goBackToSpawnedRoom(cx: Context, chara: Chara) {
+  const room = Game.rooms[chara.memory.spawnedRoomName];
+  if(!room) throw new Error(`${chara.name}: room "${chara.memory.spawnedRoomName}" not found.`);
+  const spawn = room.find(FIND_STRUCTURES, { filter:
+    s => s.structureType === STRUCTURE_SPAWN && s.id === chara.memory.spawnID
+  })[0];
+  if(!spawn) throw new Error(`${chara.name}: spawn "${chara.memory.spawnID}" not found.`);
+  chara.moveTo(spawn.pos, { ignoreCreeps: true });
 }

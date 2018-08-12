@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import * as C from 'consts';
 import { Context } from 'context_calc';
 import * as R from 'rab';
@@ -57,7 +58,7 @@ export function bold(m: any): string {
 
 export function safely<T>(f: () => T): T | undefined {
   try {
-    return ErrorMapper.wrap(f)();
+    return f(); //ErrorMapper.wrap(f)();
   } catch(err) {
     console.log(color('red', `${err}\n${err.stack}`));
     return;

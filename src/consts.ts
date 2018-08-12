@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 export const roles = {
   CHARGE: 1,
   UP: 2,

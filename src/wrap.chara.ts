@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import * as C from 'consts';
 import * as LG from 'wrap.log';
 

@@ -5,6 +5,8 @@ interface CreepMemory {
   normalCharaWorkBuildTargetID?: string;
   normalCharaWorkSpawnSpawnExID?: string;
   taste: number;
+  spawnedRoomName: string;
+  spawnID: string;
 }
 
 interface RoomMemory {

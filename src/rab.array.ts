@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-export function sample<T>(arr: Array<T>): T {
+export function sampleNonempty<T>(arr: Array<T>): T {
   if(arr.length === 0) throw new Error('empty array');
 
   return arr[0 | Math.random() * arr.length];
@@ -27,14 +27,14 @@ export function cycleGet<T>(arr: Array<T>, idx: number): T {
 export function balance(
   expected: Array<string | number | undefined> | { [Kx in string]?: number },
   actual: Array<string | number | undefined> | { [Ka in string]?: number }
-): string {
+): string | undefined {
   const x = Array.isArray(expected) ?
     _.countBy(expected) :
     expected;
   const a = Array.isArray(actual) ?
     _.countBy(actual) :
     actual;
-  return _.min(_.shuffle(Object.keys(x)), k => {
+  return _.minBy(_.shuffle(Object.keys(x)), k => {
     const xk = x[k];
     return xk ? (a[k] || 0) / xk : 1e30;
   });
