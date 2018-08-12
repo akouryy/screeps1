@@ -6,6 +6,7 @@ import * as R from 'rab';
 import { Chara } from 'wrap.chara';
 import * as Charas from 'wrap.chara';
 import * as LG from 'wrap.log';
+import * as charaMoveManager from 'chara/manage.move';
 
 const preLog = LG.color('#fcc', ' [nc]       ');
 
@@ -138,7 +139,7 @@ export function pickEne(cx: Context, chara: Chara) {
     if(drop.length > 0) {
       const err = chara.pickup(drop[0]);
       if(err === ERR_NOT_IN_RANGE) {
-        chara.moveTo(drop[0], {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+        charaMoveManager.registerMoveTo(cx, chara, drop[0]);
       }
       if(cx.flags.debug && err !== OK) {
         LG.println(preLog, `err: ${Charas.logFormat(chara)}.pickup: ${err}.`);
@@ -190,12 +191,15 @@ export function gainSrc(cx: Context, chara: Chara) {
       chara.pickup(src):
       chara.withdraw(src, RESOURCE_ENERGY);
 
-  if(err === ERR_NOT_IN_RANGE) {
+  if(err === OK) {
+    charaMoveManager.blockOthersMove(cx, chara);
+  } else if(err === ERR_NOT_IN_RANGE) {
     if(cx.flags.shouldPickup) {
       const ret = pickEne(cx, chara);
       if(ret) return ret;
     }
-    chara.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+    const range = chara.pos.getRangeTo(src);
+    charaMoveManager.registerMoveTo(cx, chara, src, { ignoreCreeps: range > 2 });
 
     const lnDist = chara.pos.getRangeTo(src);
     if(lnDist === 2 || lnDist === 3) ++mem.ncweWait;
@@ -208,9 +212,9 @@ export function gainSrc(cx: Context, chara: Chara) {
     if(!(src instanceof Source) || src.ticksToRegeneration > 30) {
       balanceSources(cx, chara);
     }
-    chara.moveTo(src, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+    charaMoveManager.registerMoveTo(cx, chara, src);
 
-  } else if(err !== OK) {
+  } else {
     LG.println(preLog, `${Charas.logFormat(chara)}.harvest: ${err}`);
   }
   return { end: chara.carry.energy >= chara.carryCapacity - 4 };
@@ -253,7 +257,7 @@ export function workSpawn(cx: Context, chara: Chara) {
 
   const err = chara.transfer(tgt, RESOURCE_ENERGY);
   if(err == ERR_NOT_IN_RANGE) {
-    const err = chara.moveTo(tgt, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+    charaMoveManager.registerMoveTo(cx, chara, tgt);
   }
   if(chara.carry.energy === 0) {
     end = true;
@@ -264,7 +268,7 @@ export function workSpawn(cx: Context, chara: Chara) {
 export function workUp(cx: Context, chara: Chara) {
   if(!chara.room.controller) return;
   if(chara.upgradeController(chara.room.controller) == ERR_NOT_IN_RANGE) {
-    chara.moveTo(chara.room.controller, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+    charaMoveManager.registerMoveTo(cx, chara, chara.room.controller);
   }
   return { end: chara.carry.energy === 0 };
 }
@@ -275,7 +279,7 @@ export function workTower(cx: Context, chara: Chara) {
   if(targets.length > 0) {
     const tgt = R.a.cycleGet(targets, 0 | new M.CreepMemoryWrapper(chara).taste_ / 13);
     if(chara.transfer(tgt, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-      chara.moveTo(tgt, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+      charaMoveManager.registerMoveTo(cx, chara, tgt);
     }
     if(chara.carry.energy === 0) {
       end = true;
@@ -320,7 +324,7 @@ export function workBuild(cx: Context, chara: Chara) {
   })();
 
   if(chara.build(tgt) == ERR_NOT_IN_RANGE) {
-    chara.moveTo(tgt, {visualizePathStyle: {stroke: C.charaColors[chara.name], opacity: 1}});
+    charaMoveManager.registerMoveTo(cx, chara, tgt);
   }
   if(chara.carry.energy === 0) {
     end = true;
@@ -347,5 +351,5 @@ export function goBackToSpawnedRoom(cx: Context, chara: Chara) {
     s => s.structureType === STRUCTURE_SPAWN && s.id === chara.memory.spawnID
   })[0];
   if(!spawn) throw new Error(`${chara.name}: spawn "${chara.memory.spawnID}" not found.`);
-  chara.moveTo(spawn.pos, { ignoreCreeps: true });
+  charaMoveManager.registerMoveTo(cx, chara, spawn);
 }

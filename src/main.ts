@@ -7,6 +7,7 @@ import * as contextCalc from 'context_calc';
 import * as spawn from 'spawn';
 import * as wroom from 'wrap.room';
 import * as roleTower from 'role.tower';
+import * as charaMoveManager from 'chara/manage.move';
 import { ErrorMapper } from 'utils/ErrorMapper';
 
 const preLog = ' [main]     ';
@@ -14,6 +15,7 @@ const preLog = ' [main]     ';
 export const loop = ErrorMapper.wrap(() => {
   const cx = contextCalc.calc();
   // R.u.safely(() => wroom.safemode(Game.spawns.pyon.room));
+  LG.safely(() => charaMoveManager.tickBegin(cx));
   LG.safely(() => spawn.tick(cx));
 
   for (const ts of cx.towers) {
@@ -24,25 +26,7 @@ export const loop = ErrorMapper.wrap(() => {
     }
   }
 
-  /*
   LG.safely(() => {
-    if(Game.creeps.claimer_) {
-      const creep = Game.creeps.claimer_;
-      if(creep.room.name === 'W51S52') {
-        creep.moveTo(creep.pos.findClosestByRange(FIND_EXIT_LEFT));
-      } else {
-        const err = creep.claimController(creep.room.controller);
-        LG.println(preLog, err);
-        if(err === ERR_NOT_IN_RANGE) {
-          creep.moveTo(creep.room.controller);
-        }
-      }
-    }
-  });
-  */
-
-  LG.safely(() => {
-    // creepsManager.tick(cx);
     _.forEach(cx.r, (cxr, room) => {
       if (!cxr) return;
 
@@ -53,6 +37,8 @@ export const loop = ErrorMapper.wrap(() => {
       }
     });
   });
+
+  LG.safely(() => charaMoveManager.tickEnd(cx));
 
   if (cx.flags.debug) LG.safely(() => contextCalc.log(contextCalc.calc()));
 
