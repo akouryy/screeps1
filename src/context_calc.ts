@@ -237,4 +237,5 @@ export function log(cx: Context) {
         .map(f => `${f}=${cx.flags[f]}`).join(', '),
     );
   }
+  throw new Error('TEST');
 }
