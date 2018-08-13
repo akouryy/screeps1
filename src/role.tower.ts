@@ -2,7 +2,7 @@ import _ from 'lodash';
 import * as C from 'consts';
 import * as R from 'rab';
 import * as LG from 'wrap.log';
-import { Context } from 'context_calc';
+import { Context } from 'context';
 
 export function tick(cx: Context, tower: StructureTower) {
   const cxr = cx.r[tower.room.name];

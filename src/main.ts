@@ -2,14 +2,15 @@ import _ from 'lodash';
 import * as c from 'consts';
 import * as R from 'rab';
 import * as LG from 'wrap.log';
-import * as normalChara from 'chara.normal';
-import * as contextCalc from 'context_calc';
+import * as charaNormal from 'chara/born.normal';
+import * as charaDropper from 'chara/born.dropper';
+import * as contextCalc from 'context';
 import * as spawn from 'spawn';
 import * as wroom from 'wrap.room';
 import * as roleTower from 'role.tower';
 import * as charaMoveManager from 'chara/manage.move';
 import { ErrorMapper } from 'utils/ErrorMapper';
-import { isCharaNormal } from 'chara/born';
+import { isCharaNormal, isCharaDropper } from 'chara/born';
 
 const preLog = ' [main]     ';
 
@@ -31,10 +32,12 @@ export const loop = ErrorMapper.wrap(() => {
     _.forEach(cx.r, (cxr, room) => {
       if(!cxr) return;
 
-      for(const chara of cxr.myCharas) {
+      for(const chara of cxr.charas) {
         LG.safely(() => {
           if(isCharaNormal(chara)) {
-            normalChara.tick(cx, chara);
+            charaNormal.tick(cx, chara);
+          } else if(isCharaDropper(chara)) {
+            charaDropper.tick(cx, chara);
           }
         });
       }

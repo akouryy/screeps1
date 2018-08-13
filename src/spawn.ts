@@ -2,7 +2,7 @@ import _ from 'lodash';
 import * as c from 'consts';
 import * as R from 'rab';
 import * as LG from 'wrap.log';
-import { Context } from 'context_calc';
+import { Context, RoomContext } from 'context';
 import { BornType } from 'chara/born';
 import * as CharaMemory from 'chara/memory';
 
@@ -13,8 +13,9 @@ export function tick(cx: Context) {
   LG.safely(() => {
     for(const room of cx.rooms) {
       const cxr = cx.r[room.name];
-      if(cxr !== undefined && cxr.creeps.length < 10) {
-        spawn(cx, room, {
+      if(!cxr) continue;
+      if(shouldSpawnNormal(cxr)) {
+        spawnNormal(cx, room, {
           [c.roles.CHARGE]: 0.3,
           [c.roles.UP]: 0.4,
           [c.roles.BUILD]: 0.3,
@@ -33,17 +34,21 @@ export function clearMemory(cx: Context) {
   }
 }
 
-export function spawn(cx: Context, room: Room, rolePs: { [R in number]: number | undefined }) {
+export function shouldSpawnNormal(cxr: RoomContext): boolean {
+  return cxr.charasNormal.length < 10;
+}
+
+export function spawnNormal(cx: Context, room: Room, rolePs: { [R in number]: number | undefined }) {
   if(room !== Game.spawns.pyon.room) return;
   if(cx.flags.stopSpawn) return;
   const cxr = cx.r[room.name];
   if(!cxr) return;
 
   const eneToUse =
-    cxr.creeps.length < 2 ? 300 :
-    cxr.creeps.length < 4 ? 450 :
-    cxr.creeps.length < 6 ? 550 :
-    cxr.creeps.length < 8 ? 650 :
+    cxr.charasNormal.length < 2 ? 300 :
+    cxr.charasNormal.length < 4 ? 450 :
+    cxr.charasNormal.length < 6 ? 550 :
+    cxr.charasNormal.length < 8 ? 650 :
     800;
   if(Game.spawns.pyon.room.energyAvailable < eneToUse) return;
 

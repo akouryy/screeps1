@@ -16,6 +16,6 @@ export function isCharaNormal(c: Chara): c is CharaNormal {
 }
 
 export type CharaDropper = Chara & { memory: CharaMemory.Dropper };
-export function isCharaDropper(c: Chara): c is CharaNormal {
+export function isCharaDropper(c: Chara): c is CharaDropper {
   return c.memory.born === BornType.dropper;
 }

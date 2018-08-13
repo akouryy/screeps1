@@ -2,7 +2,7 @@ import _ from 'lodash';
 import * as C from 'consts';
 import * as R from 'rab';
 import * as LG from 'wrap.log';
-import { Context, RoomSpecificContext } from 'context_calc';
+import { Context, RoomContext } from 'context';
 import { Chara, isChara } from 'wrap.chara';
 
 const dx: {
@@ -55,10 +55,10 @@ export function tickBegin(cx: Context) {
   charaMoves = {};
   shouldStayBlocking = {};
 
-  _.forEach(cx.r, (cxr: RoomSpecificContext | undefined, roomName: string) => {
+  _.forEach(cx.r, (cxr: RoomContext | undefined, roomName: string) => {
     if(!cxr) return;
     LG.safely(() => {
-      _.forEach(cxr.myCharas, (cr: Chara) => {
+      _.forEach(cxr.charas, (cr: Chara) => {
         posToCName[cr.pos.toString()] = cr.name;
       });
     });

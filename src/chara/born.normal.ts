@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import * as C from 'consts';
-import { Context } from 'context_calc';
+import { Context } from 'context';
 import * as R from 'rab';
 import { Chara } from 'wrap.chara';
 import * as Charas from 'wrap.chara';
@@ -71,7 +71,7 @@ export function balanceSources(cx: Context, chara: CharaNormal) {
   } else {
     mem.normalCharaSourceID = R.a.balance(
       cxr.sourcesBalance,
-      cxr.myCharas.map(c => isCharaNormal(c) ? c.memory.normalCharaSourceID : undefined),
+      cxr.charasNormal.map(c => c.memory.normalCharaSourceID),
     );
     if(cx.flags.debug) {
       LG.println(preLog, `${Charas.logFormat(chara)} targeted source #${mem.normalCharaSourceID}.`);
@@ -87,8 +87,7 @@ export function balanceSources(cx: Context, chara: CharaNormal) {
     const src1 = sourceLikes.find(s => s.id === mem1.normalCharaSourceID);
     if(!src1) return;
     const dist1 = cr1.pos.findPathTo(src1).length;
-    for(const cr2 of cxr.myCharas) {
-      if(!isCharaNormal(cr2)) continue;
+    for(const cr2 of cxr.charasNormal) {
       const mem2 = cr2.memory;
       if(mem2.normalCharaState !== C.NormalCharaStates.GAIN_SRC) continue;
 
@@ -116,7 +115,7 @@ export function balanceWork(cx: Context, chara: CharaNormal) {
 
   mem.normalCharaState = R.a.balanceNum(
     cxr.workBalance,
-    cxr.myCharas.map(c => isCharaNormal(c) ? c.memory.normalCharaState : undefined),
+    cxr.charasNormal.map(c => c.memory.normalCharaState),
   );
   switch(mem.normalCharaState) {
     case C.NormalCharaStates.WORK_SPAWN:

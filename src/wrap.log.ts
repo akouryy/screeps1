@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import * as C from 'consts';
-import { Context } from 'context_calc';
+import { Context } from 'context';
 import * as R from 'rab';
 import { ErrorMapper } from 'utils/ErrorMapper';
 
