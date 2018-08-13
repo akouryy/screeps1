@@ -63,7 +63,16 @@ export function balanceSources(cx: Context, chara: CharaNormal) {
   if(!cxr) return;
   const mem = chara.memory;
 
-  if(Math.random() < (cxr.attacked ? 0.3 : 0.3) && cxr.withdrawTargets.length > 0) {
+  const ctnrs = cxr.withdrawTargets.filter((t): t is StructureContainer =>
+    t instanceof StructureContainer && t.store.energy >= 100
+  );
+
+  if(ctnrs.length > 0 && Math.random() < 0.5) {
+    mem.normalCharaSourceID = R.a.sampleNonempty(ctnrs).id;
+    if(cx.flags.debug) {
+      LG.println(preLog, `${Charas.logFormat(chara)} targeted container #${mem.normalCharaSourceID}.`);
+    }
+  } else if(Math.random() < (cxr.attacked ? 0.3 : 0.3) && cxr.withdrawTargets.length > 0) {
     mem.normalCharaSourceID = R.a.sampleNonempty(cxr.withdrawTargets).id;
     if(cx.flags.debug) {
       LG.println(preLog, `${Charas.logFormat(chara)} targeted withdrawee #${mem.normalCharaSourceID}.`);

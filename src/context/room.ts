@@ -59,9 +59,7 @@ export function calcRoomContext(room: Room): RoomContext {
   const spawnsUnfilled = room.find(FIND_STRUCTURES, {
     filter: (structure: Structure) =>
       [STRUCTURE_EXTENSION as StructureConstant, STRUCTURE_SPAWN].includes(structure.structureType) &&
-        !['5b6aad6573dec0420e2071e8', '5b6a9728f4feee16c8710c41', '5b6a8b2311faf97bdec3a8db',
-          '5b674e0154450e3f59dfd6c3', '5b673099c82c6a10bcacdabf', '5b673e4c5982db10ac6759a3',
-          '5b67b8a7af5ac16dd37b6af3'].includes(structure.id) &&
+        !['5b683d3937852f3d52dc8278'].includes(structure.id) &&
         (structure as SpawnLike).energy < (structure as SpawnLike).energyCapacity,
   }) as Array<SpawnLike>;
 
@@ -81,7 +79,9 @@ export function calcRoomContext(room: Room): RoomContext {
     sources.length >= 2 ?
     {
       [sources[0].id]: sources[0].energy > 0 || sources[0].ticksToRegeneration <= 30 ? 8 : 0.01,
-      [sources[1].id]: sources[1].energy > 0 || sources[1].ticksToRegeneration <= 30 ? 4 : 0.01,
+      [sources[1].id]:
+        (sources[1].energy > 0 || sources[1].ticksToRegeneration <= 30) && charasDropper.length === 0
+        ? 4 : 0.01,
     } :
     sources.length >= 1 ?
     {

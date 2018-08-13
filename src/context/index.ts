@@ -38,25 +38,25 @@ export function calc(): Context {
   const damagedWalls = rooms.map(r =>
     _.sortBy(r.find(FIND_STRUCTURES, {
       filter: ds =>
-        ds.structureType === STRUCTURE_WALL && ds.hits < ds.hitsMax,
+        ds.structureType === STRUCTURE_WALL && ds.hits <= ds.hitsMax - TOWER_POWER_REPAIR,
     }) as Array<StructureWall>, ds => ds.hits / ds.hitsMax)
   );
   const damagedRamparts = rooms.map(r =>
     _.sortBy(r.find(FIND_STRUCTURES, {
       filter: ds =>
-        ds.structureType === STRUCTURE_RAMPART && ds.hits < ds.hitsMax,
+        ds.structureType === STRUCTURE_RAMPART && ds.hits <= ds.hitsMax - TOWER_POWER_REPAIR,
     }) as Array<StructureRampart>, ds => ds.hits / ds.hitsMax)
   );
   const damagedRoads = rooms.map(r =>
     _.sortBy(r.find(FIND_STRUCTURES, {
       filter: ds =>
-        ds.structureType === STRUCTURE_ROAD && ds.hits < ds.hitsMax,
+        ds.structureType === STRUCTURE_ROAD && ds.hits <= ds.hitsMax - TOWER_POWER_REPAIR,
     }) as Array<StructureRoad>, ds => ds.hits / ds.hitsMax)
   );
   const damagedContainers = rooms.map(r =>
     _.sortBy(r.find(FIND_STRUCTURES, {
       filter: ds =>
-        ds.structureType === STRUCTURE_CONTAINER && ds.hits < ds.hitsMax,
+        ds.structureType === STRUCTURE_CONTAINER && ds.hits <= ds.hitsMax - TOWER_POWER_REPAIR,
     }) as Array<StructureContainer>, ds => ds.hits / ds.hitsMax)
   );
 
@@ -89,30 +89,32 @@ export function log(cx: Context) {
     LG.println(
       preLog,
       `${room.name}.charas[${cxr.charas.length}/${_.keys(Game.creeps).length}]: `,
-      cxr.charas.map((c: Charas.Chara) => {
-        const commonStr = `${
-          Charas.logFormat(c)
-        }.${
-          c.memory.born
-        }`;
-
-        if(isCharaNormal(c)) {
-          const state = c.memory.normalCharaState;
-          return `${commonStr}.${
-            state === C.NormalCharaStates.GAIN_SRC ?
-              c.memory.normalCharaSourceID && c.memory.normalCharaSourceID.substr(-3) :
-            state === C.NormalCharaStates.WORK_BUILD ?
-              c.memory.normalCharaWorkBuildTargetID && c.memory.normalCharaWorkBuildTargetID.substr(-3):
-            state === C.NormalCharaStates.WORK_SPAWN ?
-              c.memory.normalCharaWorkSpawnSpawnExID && c.memory.normalCharaWorkSpawnSpawnExID.substr(-3):
-              null
+      cxr.charas.map((c: Charas.Chara) =>
+        LG.safely(() => {
+          const commonStr = `${
+            Charas.logFormat(c)
+          }.${
+            c.memory.born
           }`;
-        } else if(isCharaDropper(c)) {
-          return `${commonStr}.${c.memory.eneID}`;
-        } else {
-          return commonStr;
-        }
-      }).join('; ')
+
+          if(isCharaNormal(c)) {
+            const state = c.memory.normalCharaState;
+            return `${commonStr}.${state}.${
+              state === C.NormalCharaStates.GAIN_SRC ?
+                c.memory.normalCharaSourceID && c.memory.normalCharaSourceID.substr(-3) :
+              state === C.NormalCharaStates.WORK_BUILD ?
+                c.memory.normalCharaWorkBuildTargetID && c.memory.normalCharaWorkBuildTargetID.substr(-3):
+              state === C.NormalCharaStates.WORK_SPAWN ?
+                c.memory.normalCharaWorkSpawnSpawnExID && c.memory.normalCharaWorkSpawnSpawnExID.substr(-3):
+                null
+            }`;
+          } else if(isCharaDropper(c)) {
+            return `${commonStr}.${c.memory.eneID.substr(-3)}`;
+          } else {
+            return commonStr;
+          }
+        })
+      ).join('; ')
     );
     if(cxr.attacked) {
       LG.println(

@@ -5,6 +5,7 @@ import * as LG from 'wrap.log';
 import { Context, RoomContext } from 'context';
 import { BornType } from 'chara/born';
 import * as CharaMemory from 'chara/memory';
+import { balance } from 'rab.array';
 
 const preLog = LG.color('#c99', ' [spn]      ');
 
@@ -14,7 +15,9 @@ export function tick(cx: Context) {
     for(const room of cx.rooms) {
       const cxr = cx.r[room.name];
       if(!cxr) continue;
-      if(shouldSpawnNormal(cxr)) {
+      if(shouldSpawnDropper(cxr)) {
+        spawnDropper(cx, cxr);
+      } else if(shouldSpawnNormal(cxr)) {
         spawnNormal(cx, room, {
           [c.roles.CHARGE]: 0.3,
           [c.roles.UP]: 0.4,
@@ -78,6 +81,39 @@ export function spawnNormal(cx: Context, room: Room, rolePs: { [R in number]: nu
     if(f([W,W,W,C,M,M]) === ERR_NOT_ENOUGH_ENERGY)
     if(f([W,W,C,M,M]) === ERR_NOT_ENOUGH_ENERGY)
     f([W,C,M]);
+  }
+}
+
+export function shouldSpawnDropper(cxr: RoomContext): boolean {
+  return cxr.charasDropper.length < _.keys(cxr.preferences.dropperEneBalance).length;
+}
+
+export function spawnDropper(cx: Context, cxr: RoomContext) {
+  if(cxr.room !== Game.spawns.pyon.room) return;
+  if(cx.flags.stopSpawn) return;
+
+  const f = (parts: Array<BodyPartConstant>) => {
+    const name = genNewName(cx);
+    const eneID = balance(cxr.preferences.dropperEneBalance, cxr.charasDropper.map(c => c.memory.eneID));
+    if(!eneID) return;
+    const memory: CharaMemory.Dropper = {
+      born: BornType.dropper,
+      eneID,
+      working: false,
+    };
+    const err = Game.spawns.pyon.spawnCreep(parts, name, { memory });
+
+    if(err === 0) {
+      LG.println(preLog, `Started to draw ${name}[dropper] with ${parts}.`);
+    }
+    return err;
+  };
+
+  {
+    const W = WORK, M = MOVE, A = ATTACK;
+    if(f([W,W,W,W,W,W,A,M]) === ERR_NOT_ENOUGH_ENERGY)
+    if(f([W,W,W,W,W,A,M]) === ERR_NOT_ENOUGH_ENERGY)
+    f([W,W,W,W,W,M]);
   }
 }
 

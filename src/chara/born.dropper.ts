@@ -1,7 +1,7 @@
 import { Context } from 'context';
 import { CharaDropper } from 'chara/born';
 import { getEnergy } from 'chara/util';
-import { registerMoveTo } from 'chara/manage.move';
+import { registerMoveTo, blockOthersMove } from 'chara/manage.move';
 
 export function tick(cx: Context, chara: CharaDropper): void {
   const cxr = cx.r[chara.room.name];
@@ -11,7 +11,13 @@ export function tick(cx: Context, chara: CharaDropper): void {
   if(!ene) throw new Error(`unknown source-like: ${chara.memory.eneID}`);
 
   const err = getEnergy(cx, chara, ene);
-  if(err == ERR_NOT_IN_RANGE) {
-    registerMoveTo(cx, chara, ene);
+  if(err === OK) {
+    chara.memory.working = true;
+    blockOthersMove(cx, chara);
+  } else {
+    chara.memory.working = false;
+    if(err == ERR_NOT_IN_RANGE) {
+      registerMoveTo(cx, chara, ene);
+    }
   }
 }
