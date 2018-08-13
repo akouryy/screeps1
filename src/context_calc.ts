@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import * as C from 'consts';
 import { Context } from 'context_calc';
-import * as M from 'wrap.memory';
 import * as R from 'rab';
 import * as Charas from 'wrap.chara';
 import * as LG from 'wrap.log';
+import { isCharaNormal } from 'chara/born';
 
 const preLog = LG.color('#ccf', ' [cx]       ');
 
@@ -105,7 +105,7 @@ export function calc(): Context {
     const sources = room.find(FIND_SOURCES) as Array<Source>;
     const withdrawTargets = _.shuffle(Array<WithdrawTarget>().concat(
       room.find(FIND_TOMBSTONES, { filter: s =>
-        s.store[RESOURCE_ENERGY] > 0
+        s.store[RESOURCE_ENERGY] > 20
       }) as Array<Tombstone>,
       room.find(FIND_STRUCTURES, { filter: s =>
         s.structureType === STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0
@@ -186,20 +186,28 @@ export function log(cx: Context) {
       preLog,
       `${room.name}.charas[${cxr.myCharas.length}/${cxr.creeps.length}]: `,
       cxr.myCharas.map((c: Charas.Chara) => {
-        const mem = new M.CreepMemoryWrapper(c);
-        return `${
-          Charas.logFormat(c)
-        }${
-          mem.ncState && C.NormalCharaStateToShortName[mem.ncState]
-        }${
-          mem.ncState === C.NormalCharaStates.GAIN_SRC ?
-            mem.ncSrcID && mem.ncSrcID.substr(-3) :
-          mem.ncState === C.NormalCharaStates.WORK_BUILD ?
-            mem.ncWbTgtID && mem.ncWbTgtID.substr(-3):
-          mem.ncState === C.NormalCharaStates.WORK_SPAWN ?
-            mem.ncWsSpnID && mem.ncWsSpnID.substr(-3):
-            null
-        }`;
+        if(isCharaNormal(c)) {
+          const state = c.memory.normalCharaState;
+          return `${
+            Charas.logFormat(c)
+          }${
+            state && C.NormalCharaStateToShortName[state]
+          }${
+            state === C.NormalCharaStates.GAIN_SRC ?
+              c.memory.normalCharaSourceID && c.memory.normalCharaSourceID.substr(-3) :
+            state === C.NormalCharaStates.WORK_BUILD ?
+              c.memory.normalCharaWorkBuildTargetID && c.memory.normalCharaWorkBuildTargetID.substr(-3):
+            state === C.NormalCharaStates.WORK_SPAWN ?
+              c.memory.normalCharaWorkSpawnSpawnExID && c.memory.normalCharaWorkSpawnSpawnExID.substr(-3):
+              null
+          }`;
+        } else {
+          return `${
+            Charas.logFormat(c)
+          }[${
+            c.memory.born
+          }]`;
+        }
       }).join('; ')
     );
     if(cxr.attacked) {

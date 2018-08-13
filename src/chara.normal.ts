@@ -1,42 +1,42 @@
 import _ from 'lodash';
 import * as C from 'consts';
 import { Context } from 'context_calc';
-import * as M from 'wrap.memory';
 import * as R from 'rab';
 import { Chara } from 'wrap.chara';
 import * as Charas from 'wrap.chara';
 import * as LG from 'wrap.log';
 import * as charaMoveManager from 'chara/manage.move';
+import { CharaNormal, isCharaNormal } from 'chara/born';
 
 const preLog = LG.color('#fcc', ' [nc]       ');
 
-export function tick(cx: Context, chara: Chara) {
+export function tick(cx: Context, chara: CharaNormal) {
   if(chara.memory.spawnedRoomName && chara.room.name !== chara.memory.spawnedRoomName) {
     goBackToSpawnedRoom(cx, chara);
     return;
   }
 
-  const mem = new M.CreepMemoryWrapper(chara);
+  const mem = chara.memory;
   const cxr = cx.r[chara.room.name];
   if(cxr === undefined) return;
 
-  if(!mem.ncState) {
-    mem.ncState = C.NormalCharaStates.GAIN_SRC;
+  if(!mem.normalCharaState) {
+    mem.normalCharaState = C.NormalCharaStates.GAIN_SRC;
     balanceSources(cx, chara);
   }
   LG.safely(() => {
     if(cxr.attacked) attackLittle(cx, chara);
   });
-  if(mem.ncState === C.NormalCharaStates.GAIN_SRC) {
+  if(mem.normalCharaState === C.NormalCharaStates.GAIN_SRC) {
     const res = gainSrc(cx, chara);
     if(res && res.end) {
-      mem.ncSrcID = undefined;
+      mem.normalCharaSourceID = undefined;
       balanceWork(cx, chara);
-      chara.say(`仕事=${C.NormalCharaStateToShortName[mem.ncState]}`);
+      chara.say(`仕事=${C.NormalCharaStateToShortName[mem.normalCharaState]}`);
     }
   } else {
     const res = (() => {
-      switch(mem.ncState) {
+      switch(mem.normalCharaState) {
         case C.NormalCharaStates.WORK_SPAWN:
           return workSpawn(cx, chara);
         case C.NormalCharaStates.WORK_BUILD:
@@ -46,35 +46,35 @@ export function tick(cx: Context, chara: Chara) {
         case C.NormalCharaStates.WORK_TOWER:
           return workTower(cx, chara);
         default:
-          throw new Error('Unknown normalCharaState: ' + JSON.stringify(mem.ncState));
+          throw new Error('Unknown normalCharaState: ' + JSON.stringify(mem.normalCharaState));
       }
     })();
     if(res && res.end) {
-      mem.ncState = C.NormalCharaStates.GAIN_SRC;
+      mem.normalCharaState = C.NormalCharaStates.GAIN_SRC;
       balanceSources(cx, chara);
-      mem.taste_ = 0 | Math.random() * (1 << 30);
+      mem.taste = 0 | Math.random() * (1 << 30);
       chara.say('補給');
     }
   }
 }
 
-export function balanceSources(cx: Context, chara: Chara) {
+export function balanceSources(cx: Context, chara: CharaNormal) {
   const cxr = cx.r[chara.room.name];
   if(!cxr) return;
-  const mem = new M.CreepMemoryWrapper(chara);
+  const mem = chara.memory;
 
   if(Math.random() < (cxr.attacked ? 0.3 : 0.3) && cxr.withdrawTargets.length > 0) {
-    mem.ncSrcID = R.a.sampleNonempty(cxr.withdrawTargets).id;
+    mem.normalCharaSourceID = R.a.sampleNonempty(cxr.withdrawTargets).id;
     if(cx.flags.debug) {
-      LG.println(preLog, `${Charas.logFormat(chara)} targeted withdrawee #${mem.ncSrcID}.`);
+      LG.println(preLog, `${Charas.logFormat(chara)} targeted withdrawee #${mem.normalCharaSourceID}.`);
     }
   } else {
-    mem.ncSrcID = R.a.balance(
+    mem.normalCharaSourceID = R.a.balance(
       cxr.sourcesBalance,
-      cxr.creeps.map(c => new M.CreepMemoryWrapper(c).ncSrcID),
+      cxr.myCharas.map(c => isCharaNormal(c) ? c.memory.normalCharaSourceID : undefined),
     );
     if(cx.flags.debug) {
-      LG.println(preLog, `${Charas.logFormat(chara)} targeted source #${mem.ncSrcID}.`);
+      LG.println(preLog, `${Charas.logFormat(chara)} targeted source #${mem.normalCharaSourceID}.`);
     }
   }
 
@@ -84,21 +84,22 @@ export function balanceSources(cx: Context, chara: Chara) {
     const cr1 = chara;
     const mem1 = mem;
 
-    const src1 = sourceLikes.find(s => s.id === mem1.ncSrcID);
+    const src1 = sourceLikes.find(s => s.id === mem1.normalCharaSourceID);
     if(!src1) return;
     const dist1 = cr1.pos.findPathTo(src1).length;
     for(const cr2 of cxr.myCharas) {
-      const mem2 = new M.CreepMemoryWrapper(cr2);
-      if(mem2.ncState !== C.NormalCharaStates.GAIN_SRC) continue;
+      if(!isCharaNormal(cr2)) continue;
+      const mem2 = cr2.memory;
+      if(mem2.normalCharaState !== C.NormalCharaStates.GAIN_SRC) continue;
 
-      const src2 = sourceLikes.find(s => s.id === mem2.ncSrcID);
+      const src2 = sourceLikes.find(s => s.id === mem2.normalCharaSourceID);
       if(!src2) continue;
       const dist2 = cr2.pos.findPathTo(src2).length;
       const newDist1 = cr1.pos.findPathTo(src2).length;
       const newDist2 = cr2.pos.findPathTo(src1).length;
       if(newDist1 < dist1 && newDist2 < dist2 || newDist1 < dist2 && newDist2 < dist1) {
-        mem1.ncSrcID = src2.id;
-        mem2.ncSrcID = src1.id;
+        mem1.normalCharaSourceID = src2.id;
+        mem2.normalCharaSourceID = src1.id;
         if(cx.flags.debug) {
           LG.println(preLog, `Swapped sources of ${Charas.logFormat(cr1)} and ${Charas.logFormat(cr2)}.`);
         }
@@ -108,16 +109,16 @@ export function balanceSources(cx: Context, chara: Chara) {
   });
 }
 
-export function balanceWork(cx: Context, chara: Chara) {
+export function balanceWork(cx: Context, chara: CharaNormal) {
   const cxr = cx.r[chara.room.name];
   if(!cxr) return;
-  const mem = new M.CreepMemoryWrapper(chara);
+  const mem = chara.memory;
 
-  mem.ncState = R.a.balanceNum(
+  mem.normalCharaState = R.a.balanceNum(
     cxr.workBalance,
-    cxr.creeps.map(c => new M.CreepMemoryWrapper(c).ncState),
+    cxr.myCharas.map(c => isCharaNormal(c) ? c.memory.normalCharaState : undefined),
   );
-  switch(mem.ncState) {
+  switch(mem.normalCharaState) {
     case C.NormalCharaStates.WORK_SPAWN:
       balanceWorkSpawn(cx, chara);
       break;
@@ -129,11 +130,11 @@ export function balanceWork(cx: Context, chara: Chara) {
     case C.NormalCharaStates.WORK_TOWER:
       break;
     default:
-      throw new Error('Unknown normalCharaState: ' + JSON.stringify(mem.ncState));
+      throw new Error('Unknown normalCharaState: ' + JSON.stringify(mem.normalCharaState));
   }
 }
 
-export function pickEne(cx: Context, chara: Chara) {
+export function pickEne(cx: Context, chara: CharaNormal) {
   if(cx.flags.shouldPickup) {
     const drop = chara.room.find(FIND_DROPPED_RESOURCES, r => r.resourceType === RESOURCE_ENERGY);
     if(drop.length > 0) {
@@ -150,36 +151,36 @@ export function pickEne(cx: Context, chara: Chara) {
   return undefined;
 }
 
-export function gainSrc(cx: Context, chara: Chara) {
+export function gainSrc(cx: Context, chara: CharaNormal) {
   const cxr = cx.r[chara.room.name];
   if(cxr === undefined) return;
 
-  const mem = new M.CreepMemoryWrapper(chara);
-  mem.ncweWait = mem.ncweWait || 0;
+  const mem = chara.memory;
+  mem.normalCharaWorkEnergyWaiting = mem.normalCharaWorkEnergyWaiting || 0;
 
   const src = (() => {
     const sls = cxr.sourceLikes;
     for(let i = 0; i < 3; ++i) {
-      const src = sls.find(s => s.id === mem.ncSrcID);
+      const src = sls.find(s => s.id === mem.normalCharaSourceID);
       if(src) return src;
-      mem.ncweWait = 0;
+      mem.normalCharaWorkEnergyWaiting = 0;
       balanceSources(cx, chara);
     }
     return sls[0];
   })();
 
-  if((mem.ncweWait & 7) === 7) {
+  if((mem.normalCharaWorkEnergyWaiting & 7) === 7) {
     const dir = R.a.sampleNonempty([TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT]);
     const err = chara.move(dir);
     if(cx.flags.debug) {
-      LG.println(preLog, `${Charas.logFormat(chara)}<${mem.ncweWait}>'s breakthrough to ${dir}: ${err}`);
+      LG.println(preLog, `${Charas.logFormat(chara)}<${mem.normalCharaWorkEnergyWaiting}>'s breakthrough to ${dir}: ${err}`);
       chara.say('打開');
     }
-    if((mem.ncweWait & 31) === 31) {
+    if((mem.normalCharaWorkEnergyWaiting & 31) === 31) {
       balanceSources(cx, chara);
-      mem.ncweWait = 0;
+      mem.normalCharaWorkEnergyWaiting = 0;
     } else {
-      ++mem.ncweWait;
+      ++mem.normalCharaWorkEnergyWaiting;
     }
     return { end: false };
   }
@@ -202,8 +203,8 @@ export function gainSrc(cx: Context, chara: Chara) {
     charaMoveManager.registerMoveTo(cx, chara, src, { ignoreCreeps: range > 2 });
 
     const lnDist = chara.pos.getRangeTo(src);
-    if(lnDist === 2 || lnDist === 3) ++mem.ncweWait;
-    else mem.ncweWait = 0;
+    if(lnDist === 2 || lnDist === 3) ++mem.normalCharaWorkEnergyWaiting;
+    else mem.normalCharaWorkEnergyWaiting = 0;
 
   } else if(err === ERR_NOT_ENOUGH_RESOURCES) {
     if(cx.flags.debug) {
@@ -220,7 +221,7 @@ export function gainSrc(cx: Context, chara: Chara) {
   return { end: chara.carry.energy >= chara.carryCapacity - 4 };
 }
 
-export function balanceWorkSpawn(cx: Context, chara: Chara) {
+export function balanceWorkSpawn(cx: Context, chara: CharaNormal) {
   const cxr = cx.r[chara.room.name];
   if(cxr === undefined) return;
   const spawns = cxr.spawnsUnfilled;
@@ -228,14 +229,14 @@ export function balanceWorkSpawn(cx: Context, chara: Chara) {
   if(!spawn) {
     return { end: true };
   }
-  new M.CreepMemoryWrapper(chara).ncWsSpnID = spawn.id;
+  chara.memory.normalCharaWorkSpawnSpawnExID = spawn.id;
   if(cx.flags.debug) {
     LG.println(preLog, `${Charas.logFormat(chara)} targeted spawnex #${spawn.id}`);
   }
   return undefined;
 }
 
-export function workSpawn(cx: Context, chara: Chara) {
+export function workSpawn(cx: Context, chara: CharaNormal) {
   const cxr = cx.r[chara.room.name];
   if(cxr === undefined) return;
   const targets = cxr.spawnsUnfilled;
@@ -246,9 +247,9 @@ export function workSpawn(cx: Context, chara: Chara) {
   let end = false;
 
   const tgt = (() => {
-    const mem = new M.CreepMemoryWrapper(chara);
+    const mem = chara.memory;
     for(let i = 0; i < 3; ++i) {
-      const tgt = targets.find(t => t.id === mem.ncWsSpnID);
+      const tgt = targets.find(t => t.id === mem.normalCharaWorkSpawnSpawnExID);
       if(tgt) return tgt;
       balanceWorkSpawn(cx, chara);
     }
@@ -265,7 +266,7 @@ export function workSpawn(cx: Context, chara: Chara) {
   return { end };
 }
 
-export function workUp(cx: Context, chara: Chara) {
+export function workUp(cx: Context, chara: CharaNormal) {
   if(!chara.room.controller) return;
   if(chara.upgradeController(chara.room.controller) == ERR_NOT_IN_RANGE) {
     charaMoveManager.registerMoveTo(cx, chara, chara.room.controller);
@@ -273,11 +274,11 @@ export function workUp(cx: Context, chara: Chara) {
   return { end: chara.carry.energy === 0 };
 }
 
-export function workTower(cx: Context, chara: Chara) {
+export function workTower(cx: Context, chara: CharaNormal) {
   let end = false;
   const targets = cx.towers[0];
   if(targets.length > 0) {
-    const tgt = R.a.cycleGet(targets, 0 | new M.CreepMemoryWrapper(chara).taste_ / 13);
+    const tgt = R.a.cycleGet(targets, 0 | chara.memory.taste / 13);
     if(chara.transfer(tgt, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
       charaMoveManager.registerMoveTo(cx, chara, tgt);
     }
@@ -290,7 +291,7 @@ export function workTower(cx: Context, chara: Chara) {
   return { end };
 }
 
-export function balanceWorkBuild(cx: Context, chara: Chara) {
+export function balanceWorkBuild(cx: Context, chara: CharaNormal) {
   const cxr = cx.r[chara.room.name];
   if(cxr === undefined) return;
   const cSites = cxr.constructionSites;
@@ -298,12 +299,12 @@ export function balanceWorkBuild(cx: Context, chara: Chara) {
   if(!cSite) {
     return { end: true };
   }
-  new M.CreepMemoryWrapper(chara).ncWbTgtID = cSite.id;
+  chara.memory.normalCharaWorkBuildTargetID = cSite.id;
   LG.println(preLog, `${Charas.logFormat(chara)} targeted build #${cSite.id}.`);
   return undefined;
 }
 
-export function workBuild(cx: Context, chara: Chara) {
+export function workBuild(cx: Context, chara: CharaNormal) {
   const cxr = cx.r[chara.room.name];
   if(cxr === undefined) return;
   const targets = cxr.constructionSites;
@@ -314,9 +315,9 @@ export function workBuild(cx: Context, chara: Chara) {
   let end = false;
 
   const tgt = (() => {
-    const mem = new M.CreepMemoryWrapper(chara);
+    const mem = chara.memory;
     for(let i = 0; i < 3; ++i) {
-      const tgt = targets.find(t => t.id === mem.ncWbTgtID);
+      const tgt = targets.find(t => t.id === mem.normalCharaWorkBuildTargetID);
       if(tgt) return tgt;
       balanceWorkBuild(cx, chara);
     }
@@ -332,7 +333,7 @@ export function workBuild(cx: Context, chara: Chara) {
   return { end };
 }
 
-export function attackLittle(cx: Context, chara: Chara) {
+export function attackLittle(cx: Context, chara: CharaNormal) {
   const cxr = cx.r[chara.room.name];
   if(cxr === undefined) return;
   const atc = chara.pos.findClosestByRange(cxr.attackers);
@@ -344,7 +345,7 @@ export function attackLittle(cx: Context, chara: Chara) {
   }
 }
 
-export function goBackToSpawnedRoom(cx: Context, chara: Chara) {
+export function goBackToSpawnedRoom(cx: Context, chara: CharaNormal) {
   const room = Game.rooms[chara.memory.spawnedRoomName];
   if(!room) throw new Error(`${chara.name}: room "${chara.memory.spawnedRoomName}" not found.`);
   const spawn = room.find(FIND_STRUCTURES, { filter:

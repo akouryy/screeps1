@@ -1,4 +1,7 @@
-interface CreepMemory {
+import { BornType } from 'chara/born';
+
+export interface Normal {
+  born: BornType.normal;
   normalCharaState?: number;
   normalCharaSourceID?: string;
   normalCharaWorkEnergyWaiting?: number;
@@ -9,9 +12,8 @@ interface CreepMemory {
   spawnID: string;
 }
 
-interface RoomMemory {
-  attackedLog: { [UserName in string]: number };
-}
-
-interface Memory {
+export interface Dropper {
+  born: BornType.dropper;
+  eneID: string;
+  working: boolean;
 }

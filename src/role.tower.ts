@@ -11,7 +11,9 @@ export function tick(cx: Context, tower: StructureTower) {
   const closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
   if(closestHostile) {
     tower.attack(closestHostile);
-    return; // TODO: エネルギーチェック
+    if(Math.random() < 0.9) {
+      return; // TODO: エネルギーチェック
+    }
   }
 
   const dsss = (

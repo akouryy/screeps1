@@ -9,6 +9,7 @@ import * as wroom from 'wrap.room';
 import * as roleTower from 'role.tower';
 import * as charaMoveManager from 'chara/manage.move';
 import { ErrorMapper } from 'utils/ErrorMapper';
+import { isCharaNormal } from 'chara/born';
 
 const preLog = ' [main]     ';
 
@@ -32,7 +33,9 @@ export const loop = ErrorMapper.wrap(() => {
 
       for(const chara of cxr.myCharas) {
         LG.safely(() => {
-          normalChara.tick(cx, chara);
+          if(isCharaNormal(chara)) {
+            normalChara.tick(cx, chara);
+          }
         });
       }
     });

@@ -3,6 +3,8 @@ import * as c from 'consts';
 import * as R from 'rab';
 import * as LG from 'wrap.log';
 import { Context } from 'context_calc';
+import { BornType } from 'chara/born';
+import * as CharaMemory from 'chara/memory';
 
 const preLog = LG.color('#c99', ' [spn]      ');
 
@@ -48,9 +50,11 @@ export function spawn(cx: Context, room: Room, rolePs: { [R in number]: number |
   const f = (parts: Array<BodyPartConstant>) => {
     const name = genNewName(cx);
     const taste = 0 | Math.random() * (1 << 30);
-    const err = Game.spawns.pyon.spawnCreep(parts, name, { memory: {
+    const memory: CharaMemory.Normal = {
+      born: BornType.normal,
       taste, spawnedRoomName: room.name, spawnID: Game.spawns.pyon.id,
-    }});
+    };
+    const err = Game.spawns.pyon.spawnCreep(parts, name, { memory });
 
     if(err === 0) {
       LG.println(preLog, `Started to draw ${name} with ${parts}.`);

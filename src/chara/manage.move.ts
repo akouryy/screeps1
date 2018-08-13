@@ -77,7 +77,7 @@ export function tickEnd(cx: Context) {
       if(!blockingChara || !isChara(blockingChara)) return;
       if(charaMoves[blockingCharaName] || shouldStayBlocking[blockingCharaName]) return;
 
-      registerMove(cx, blockingChara, dir);
+      registerMove(cx, blockingChara, reversedDir[dir]);
     });
   }));
 
@@ -97,7 +97,7 @@ export function registerMove(cx: Context, chara: Chara, dir: DirectionConstant, 
   LG.safely(() => {
     charaMoves[chara.name] = dir;
 
-  const visualizedPath = _visualizedPath || [chara.pos, addDir(chara.pos, dir)];
+    const visualizedPath = _visualizedPath || [chara.pos, addDir(chara.pos, dir)];
     chara.room.visual.poly(visualizedPath,
       { stroke: C.charaColors[chara.name], opacity: 1 }
     );
