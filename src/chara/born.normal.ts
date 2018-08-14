@@ -144,7 +144,9 @@ export function balanceWork(cx: Context, chara: CharaNormal) {
 
 export function pickEne(cx: Context, chara: CharaNormal) {
   if(cx.flags.shouldPickup) {
-    const drop = chara.room.find(FIND_DROPPED_RESOURCES, r => r.resourceType === RESOURCE_ENERGY);
+    const drop = chara.room.find(FIND_DROPPED_RESOURCES, {
+      filter: r => r.resourceType === RESOURCE_ENERGY
+    });
     if(drop.length > 0) {
       const err = chara.pickup(drop[0]);
       if(err === ERR_NOT_IN_RANGE) {

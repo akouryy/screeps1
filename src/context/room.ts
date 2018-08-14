@@ -5,6 +5,7 @@ import * as Charas from 'wrap.chara';
 import * as LG from 'wrap.log';
 import { SourceBalance, SourceLike, SpawnLike, WithdrawTarget, WorkBalance, RoomPreferences } from 'context/types';
 import { isCharaNormal, CharaNormal, CharaDropper, isCharaDropper } from 'chara/born';
+import * as Rooms from 'room/find';
 
 export interface RoomContext {
   attacked: boolean;
@@ -44,24 +45,21 @@ export function calcRoomContext(room: Room): RoomContext {
     }
   });
 
-  const sources = room.find(FIND_SOURCES) as Array<Source>;
+  const sources = room.find(FIND_SOURCES);
   const withdrawTargets = _.shuffle(Array<WithdrawTarget>().concat(
     room.find(FIND_TOMBSTONES, { filter: s =>
       s.store[RESOURCE_ENERGY] > 20
-    }) as Array<Tombstone>,
-    room.find(FIND_STRUCTURES, { filter: s =>
-      s.structureType === STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0
-    }) as Array<StructureContainer>,
+    }),
+    Rooms.findStructure(room, [STRUCTURE_CONTAINER], s => s.store[RESOURCE_ENERGY] > 0),
   ));
   const sourceLikes = _.shuffle(Array<SourceLike>().concat(withdrawTargets, sources));
   const cSites = room.find(FIND_CONSTRUCTION_SITES);
 
-  const spawnsUnfilled = room.find(FIND_STRUCTURES, {
-    filter: (structure: Structure) =>
-      [STRUCTURE_EXTENSION as StructureConstant, STRUCTURE_SPAWN].includes(structure.structureType) &&
-        !['5b683d3937852f3d52dc8278'].includes(structure.id) &&
-        (structure as SpawnLike).energy < (structure as SpawnLike).energyCapacity,
-  }) as Array<SpawnLike>;
+  const spawnsUnfilled = Rooms.findStructure(room, [STRUCTURE_EXTENSION, STRUCTURE_SPAWN],
+    s =>
+      !['5b683d3937852f3d52dc8278'].includes(s.id)
+      && s.energy < s.energyCapacity
+  );
 
   const workBalance: WorkBalance = {
     [C.NormalCharaStates.WORK_SPAWN]:
@@ -80,7 +78,8 @@ export function calcRoomContext(room: Room): RoomContext {
     {
       [sources[0].id]: sources[0].energy > 0 || sources[0].ticksToRegeneration <= 30 ? 8 : 0.01,
       [sources[1].id]:
-        (sources[1].energy > 0 || sources[1].ticksToRegeneration <= 30) && charasDropper.length === 0
+        (sources[1].energy > 0 || sources[1].ticksToRegeneration <= 30) &&
+        charasDropper.filter(c => c.memory.eneID === sources[1].id && c.memory.working).length === 0
         ? 4 : 0.01,
     } :
     sources.length >= 1 ?

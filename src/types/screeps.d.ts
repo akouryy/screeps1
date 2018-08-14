@@ -1604,7 +1604,7 @@ type FIND_MINERALS = 116;
 type FIND_NUKES = 117;
 type FIND_TOMBSTONES = 118;
 
-type FilterOptions<T extends FindConstant> = string | FilterFunction<T> | { filter: FilterFunction<T> };
+type FilterOptions<T extends FindConstant> = { filter: FilterFunction<T> };
 
 type FilterFunction<T extends FindConstant> = (object: FindTypes[T]) => boolean;
 
