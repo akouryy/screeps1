@@ -99,7 +99,7 @@ export function registerMove(cx: Context, chara: Chara, dir: DirectionConstant, 
 
     const visualizedPath = _visualizedPath || [chara.pos, addDir(chara.pos, dir)];
     chara.room.visual.poly(visualizedPath,
-      { stroke: C.charaColors[chara.name], opacity: 1 }
+      { stroke: C.charaColors[chara.name], opacity: 1, lineStyle: 'dotted', strokeWidth: 0.2 }
     );
   });
 }

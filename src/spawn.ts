@@ -111,7 +111,7 @@ export function spawnDropper(cx: Context, cxr: RoomContext) {
 
   {
     const W = WORK, M = MOVE, A = ATTACK;
-    if(f([W,W,W,W,W,W,A,M]) === ERR_NOT_ENOUGH_ENERGY)
+    // if(f([W,W,W,W,W,W,A,M]) === ERR_NOT_ENOUGH_ENERGY)
     if(f([W,W,W,W,W,A,M]) === ERR_NOT_ENOUGH_ENERGY)
     f([W,W,W,W,W,M]);
   }
