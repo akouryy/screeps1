@@ -34,6 +34,7 @@ const charas = {
   綾乃: true, 千歳: true, 櫻子: true, 向日葵: true,
   りせ: true, あかね: true, まり: true, ともこ: true,
   撫子: true, 花子: true, 楓: true,
+  あおい: true, ひなた: true, /*楓: true,*/ ここな: true,
 };
 
 export type CharaName = keyof typeof charas;
@@ -57,6 +58,7 @@ export const charaColors: {
   綾乃: '#a76b85', 千歳: '#e0dbe1', 櫻子: '#d0baa2', 向日葵: '#32a',
   りせ: 'black', あかね: '#f34', まり: '#310', ともこ: '#faa',
   撫子: '#d8b2a3', 花子: '#8d6b62', 楓: '#788698',
+  あおい: '#ffe', ひなた: '#110', ここな: '#966',
 };
 
 export const charaBGs: {
@@ -72,4 +74,5 @@ export const charaBGs: {
   綾乃: '#000', 千歳: '#000', 櫻子: '#000', 向日葵: '#fed',
   りせ: '#ccc', あかね: '#000', まり: '#ccc', ともこ: '#000',
   撫子: '#000', 花子: '#000', 楓: '#000',
+  あおい: '#000', ひなた: '#ffe', ここな: '#000',
 };
