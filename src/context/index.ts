@@ -6,7 +6,7 @@ import * as LG from 'wrap.log';
 import { isCharaNormal, isCharaDropper } from 'chara/born';
 import { RoomContext, calcRoomContext } from 'context/room';
 import { WithdrawTarget, SourceLike, SpawnLike, WorkBalance, SourceBalance, Flags } from 'context/types';
-import * as Rooms from 'room/find';
+import * as Rooms from 'room';
 
 export { RoomContext } from 'context/room';
 export * from 'context/types';
@@ -33,21 +33,21 @@ export function calc(): Context {
 
   const rooms = Object.values(Game.rooms);
 
-  const towers = rooms.map(r => Rooms.findStructure(r, [STRUCTURE_TOWER]));
+  const towers = rooms.map(r => Rooms.find.structure(r, [STRUCTURE_TOWER]));
   const damagedWalls = rooms.map(r => _.sortBy(
-    Rooms.findStructure(r, [STRUCTURE_WALL], w => w.hits <= w.hitsMax - TOWER_POWER_REPAIR),
+    Rooms.find.structure(r, [STRUCTURE_WALL], w => w.hits <= w.hitsMax - TOWER_POWER_REPAIR),
     w => w.hits / w.hitsMax
   ));
   const damagedRamparts = rooms.map(r => _.sortBy(
-    Rooms.findStructure(r, [STRUCTURE_RAMPART], r => r.hits <= r.hitsMax - TOWER_POWER_REPAIR),
+    Rooms.find.structure(r, [STRUCTURE_RAMPART], r => r.hits <= r.hitsMax - TOWER_POWER_REPAIR),
     r => r.hits / r.hitsMax)
   );
   const damagedRoads = rooms.map(r => _.sortBy(
-    Rooms.findStructure(r, [STRUCTURE_ROAD], r => r.hits <= r.hitsMax - TOWER_POWER_REPAIR),
+    Rooms.find.structure(r, [STRUCTURE_ROAD], r => r.hits <= r.hitsMax - TOWER_POWER_REPAIR),
     r => r.hits / r.hitsMax)
   );
   const damagedContainers = rooms.map(r => _.sortBy(
-    Rooms.findStructure(r, [STRUCTURE_CONTAINER], c => c.hits <= c.hitsMax - TOWER_POWER_REPAIR),
+    Rooms.find.structure(r, [STRUCTURE_CONTAINER], c => c.hits <= c.hitsMax - TOWER_POWER_REPAIR),
     c => c.hits / c.hitsMax)
   );
 

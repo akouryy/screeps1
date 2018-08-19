@@ -12,3 +12,15 @@ export function findStructure<SC extends StructureConstant>(
       && filterFn(s)
   }) as Array<StructureTypes[SC]>;
 }
+
+export function findMyStructure<SC extends StructureConstant>(
+  room: Room,
+  scs: Array<SC>,
+  filterFn: FilterStructureFunction<SC> = constFn(true),
+): Array<StructureTypes[SC]> {
+  return room.find(FIND_MY_STRUCTURES, {
+    filter: s =>
+      cast<Array<StructureConstant>>(scs).includes(s.structureType)
+      && filterFn(s)
+  }) as Array<StructureTypes[SC]>;
+}

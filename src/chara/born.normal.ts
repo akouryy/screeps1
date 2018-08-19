@@ -4,6 +4,7 @@ import { Context } from 'context';
 import * as R from 'rab';
 import { Chara } from 'wrap.chara';
 import * as Charas from 'wrap.chara';
+import * as Rooms from 'room';
 import * as LG from 'wrap.log';
 import * as charaMoveManager from 'chara/manage.move';
 import { CharaNormal, isCharaNormal } from 'chara/born';
@@ -186,7 +187,7 @@ export function gainSrc(cx: Context, chara: CharaNormal) {
       LG.println(preLog, `${Charas.logFormat(chara)}<${mem.normalCharaWorkEnergyWaiting}>'s breakthrough to ${dir}: ${err}`);
       chara.say('打開');
     }
-    if((mem.normalCharaWorkEnergyWaiting & 31) === 31) {
+    if((mem.normalCharaWorkEnergyWaiting & 15) === 15) {
       balanceSources(cx, chara);
       mem.normalCharaWorkEnergyWaiting = 0;
     } else {
@@ -358,9 +359,7 @@ export function attackLittle(cx: Context, chara: CharaNormal) {
 export function goBackToSpawnedRoom(cx: Context, chara: CharaNormal) {
   const room = Game.rooms[chara.memory.spawnedRoomName];
   if(!room) throw new Error(`${chara.name}: room "${chara.memory.spawnedRoomName}" not found.`);
-  const spawn = room.find(FIND_STRUCTURES, { filter:
-    s => s.structureType === STRUCTURE_SPAWN && s.id === chara.memory.spawnID
-  })[0];
+  const spawn = Rooms.find.structure(room, [STRUCTURE_SPAWN], s => s.id === chara.memory.spawnID)[0];
   if(!spawn) throw new Error(`${chara.name}: spawn "${chara.memory.spawnID}" not found.`);
   charaMoveManager.registerMoveTo(cx, chara, spawn);
 }

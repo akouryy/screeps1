@@ -5,7 +5,7 @@ import * as Charas from 'wrap.chara';
 import * as LG from 'wrap.log';
 import { SourceBalance, SourceLike, SpawnLike, WithdrawTarget, WorkBalance, RoomPreferences } from 'context/types';
 import { isCharaNormal, CharaNormal, CharaDropper, isCharaDropper } from 'chara/born';
-import * as Rooms from 'room/find';
+import * as Rooms from 'room';
 
 export interface RoomContext {
   attacked: boolean;
@@ -50,12 +50,12 @@ export function calcRoomContext(room: Room): RoomContext {
     room.find(FIND_TOMBSTONES, { filter: s =>
       s.store[RESOURCE_ENERGY] > 20
     }),
-    Rooms.findStructure(room, [STRUCTURE_CONTAINER], s => s.store[RESOURCE_ENERGY] > 0),
+    Rooms.find.structure(room, [STRUCTURE_CONTAINER], s => s.store[RESOURCE_ENERGY] > 0),
   ));
   const sourceLikes = _.shuffle(Array<SourceLike>().concat(withdrawTargets, sources));
   const cSites = room.find(FIND_CONSTRUCTION_SITES);
 
-  const spawnsUnfilled = Rooms.findStructure(room, [STRUCTURE_EXTENSION, STRUCTURE_SPAWN],
+  const spawnsUnfilled = Rooms.find.structure(room, [STRUCTURE_EXTENSION, STRUCTURE_SPAWN],
     s =>
       !['5b683d3937852f3d52dc8278'].includes(s.id)
       && s.energy < s.energyCapacity
